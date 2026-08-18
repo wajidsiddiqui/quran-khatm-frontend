@@ -11,19 +11,30 @@ export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      setError("");
+    setError("");
 
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    try {
       await signup(name, email, password);
 
-      navigate("/home");
+      // Signup ke baad OTP verification page par jao
+      navigate("/verify-email", {
+        state: {
+          email: email.trim().toLowerCase(),
+        },
+      });
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Something went wrong.");
     }
   };
 
@@ -38,7 +49,11 @@ export default function Signup() {
       </p>
 
       <form onSubmit={handleSubmit} className="flex-1">
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {error && (
+          <p className="text-red-500 text-sm mb-4">
+            {error}
+          </p>
+        )}
 
         <Input
           label="Name"
@@ -65,6 +80,15 @@ export default function Signup() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <Input
+          label="Confirm Password"
+          type="password"
+          placeholder="Confirm your password"
+          required
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
         />
 
         <Button type="submit" className="w-full mt-2">

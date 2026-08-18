@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { useKhatms } from "../../context/KhatmContext";
 import TopBar from "../../components/common/TopBar";
@@ -7,18 +8,32 @@ import { Activity } from "lucide-react";
 
 export default function ActivityLog() {
   const { id } = useParams();
-  const { getKhatm, activityLog } = useKhatms();
+
+  const { getKhatm, activityLog, loadActivity } = useKhatms();
+
   const khatm = getKhatm(id);
-  if (!khatm) return <Navigate to="/khatms" replace />;
+
+  useEffect(() => {
+    loadActivity(id);
+  }, [id]);
+
+  if (!khatm) {
+    return <Navigate to="/khatms" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-cream">
       <TopBar title="Activity" />
+
       <div className="px-5 pb-8">
         {activityLog.length === 0 ? (
-          <EmptyState icon={Activity} title="No activity yet" description="Khatm activity will appear here." />
+          <EmptyState
+            icon={Activity}
+            title="No activity yet"
+            description="Khatm activity will appear here."
+          />
         ) : (
-          activityLog.map((a) => <ActivityItem key={a.id} item={a} />)
+          activityLog.map((a) => <ActivityItem key={a._id || a.id} item={a} />)
         )}
       </div>
     </div>

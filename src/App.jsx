@@ -1,20 +1,28 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { KhatmProvider } from "./context/KhatmContext";
+
 import AppLayout from "./layouts/AppLayout";
 import AuthLoadingScreen from "./components/common/AuthLoadingScreen";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import PublicRoute from "./components/auth/PublicRoute";
 
+// Onboarding
 import Splash from "./pages/onboarding/Splash";
 import Onboarding from "./pages/onboarding/Onboarding";
+
+// Auth
 import Welcome from "./pages/auth/Welcome";
 import Signup from "./pages/auth/Signup";
 import Login from "./pages/auth/Login";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import VerifyEmail from "./pages/auth/VerifyEmail";
 
+// Home
 import Home from "./pages/home/Home";
+
+// Khatm
 import MyKhatms from "./pages/khatm/MyKhatms";
 import CreateKhatm from "./pages/khatm/CreateKhatm";
 import KhatmDetails from "./pages/khatm/KhatmDetails";
@@ -28,10 +36,12 @@ import KhatmComplete from "./pages/khatm/KhatmComplete";
 import Dua from "./pages/khatm/Dua";
 import ParaReading from "./pages/khatm/ParaReading";
 
+// Quran
 import QuranHome from "./pages/quran/QuranHome";
 import JuzDetail from "./pages/quran/JuzDetail";
 import SurahReading from "./pages/quran/SurahReading";
 
+// Profile
 import Profile from "./pages/profile/Profile";
 import Settings from "./pages/profile/Settings";
 
@@ -50,50 +60,164 @@ export default function App() {
 function AppRoutes() {
   const { authLoading } = useAuth();
 
-  if (authLoading) return <AuthLoadingScreen />;
+  if (authLoading) {
+    return <AuthLoadingScreen />;
+  }
 
   return (
     <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<Splash />} />
-      <Route path="/onboarding" element={<Onboarding />} />
-      <Route path="/welcome" element={<Welcome />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/join/:inviteCode" element={<JoinKhatm />} />
+      {/* ==================== PUBLIC ROUTES ==================== */}
 
-      {/* Only accessible when NOT logged in */}
+      <Route path="/" element={<Splash />} />
+
+      <Route
+        path="/onboarding"
+        element={<Onboarding />}
+      />
+
+      <Route
+        path="/welcome"
+        element={<Welcome />}
+      />
+
+      <Route
+        path="/forgot-password"
+        element={<ForgotPassword />}
+      />
+
+      <Route
+        path="/join/:inviteCode"
+        element={<JoinKhatm />}
+      />
+
+      {/* ==================== AUTH ROUTES ==================== */}
+
       <Route element={<PublicRoute />}>
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/signup"
+          element={<Signup />}
+        />
+
+        <Route
+          path="/verify-email"
+          element={<VerifyEmail />}
+        />
+
+        <Route
+          path="/login"
+          element={<Login />}
+        />
       </Route>
 
-      {/* Protected routes - login required */}
+      {/* ==================== PROTECTED ROUTES ==================== */}
+
       <Route element={<ProtectedRoute />}>
+
+        {/* Bottom navigation layout */}
         <Route element={<AppLayout />}>
-          <Route path="/home" element={<Home />} />
-          <Route path="/khatms" element={<MyKhatms />} />
-          <Route path="/quran" element={<QuranHome />} />
-          <Route path="/profile" element={<Profile />} />
+
+          <Route
+            path="/home"
+            element={<Home />}
+          />
+
+          <Route
+            path="/khatms"
+            element={<MyKhatms />}
+          />
+
+          <Route
+            path="/quran"
+            element={<QuranHome />}
+          />
+
+          <Route
+            path="/profile"
+            element={<Profile />}
+          />
+
         </Route>
 
-        <Route path="/khatms/create" element={<CreateKhatm />} />
-        <Route path="/khatm/:id" element={<KhatmDetails />} />
-        <Route path="/khatm/:id/paras" element={<ParaList />} />
-        <Route path="/khatm/:id/members" element={<Members />} />
-        <Route path="/khatm/:id/invite" element={<Invite />} />
-        <Route path="/khatm/:id/activity" element={<ActivityLog />} />
-        <Route path="/khatm/:id/progress" element={<KhatmProgress />} />
-        <Route path="/khatm/:id/complete" element={<KhatmComplete />} />
-        <Route path="/khatm/:id/dua" element={<Dua />} />
-        <Route path="/khatm/:id/para/:num/read" element={<ParaReading />} />
+        {/* ==================== KHATM ROUTES ==================== */}
 
-        <Route path="/quran/surah/:id" element={<SurahReading />} />
-        <Route path="/quran/juz/:num" element={<JuzDetail />} />
+        <Route
+          path="/khatms/create"
+          element={<CreateKhatm />}
+        />
 
-        <Route path="/settings" element={<Settings />} />
+        <Route
+          path="/khatm/:id"
+          element={<KhatmDetails />}
+        />
+
+        <Route
+          path="/khatm/:id/paras"
+          element={<ParaList />}
+        />
+
+        <Route
+          path="/khatm/:id/members"
+          element={<Members />}
+        />
+
+        <Route
+          path="/khatm/:id/invite"
+          element={<Invite />}
+        />
+
+        <Route
+          path="/khatm/:id/activity"
+          element={<ActivityLog />}
+        />
+
+        <Route
+          path="/khatm/:id/progress"
+          element={<KhatmProgress />}
+        />
+
+        <Route
+          path="/khatm/:id/complete"
+          element={<KhatmComplete />}
+        />
+
+        <Route
+          path="/khatm/:id/dua"
+          element={<Dua />}
+        />
+
+        <Route
+          path="/khatm/:id/para/:num/read"
+          element={<ParaReading />}
+        />
+
+        {/* ==================== QURAN ROUTES ==================== */}
+
+        <Route
+          path="/quran/surah/:id"
+          element={<SurahReading />}
+        />
+
+        <Route
+          path="/quran/juz/:num"
+          element={<JuzDetail />}
+        />
+
+        {/* ==================== SETTINGS ==================== */}
+
+        <Route
+          path="/settings"
+          element={<Settings />}
+        />
+
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* ==================== FALLBACK ==================== */}
+
+      <Route
+        path="*"
+        element={<Navigate to="/" replace />}
+      />
+
     </Routes>
   );
 }
