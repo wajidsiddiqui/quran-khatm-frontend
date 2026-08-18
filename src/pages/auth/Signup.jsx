@@ -27,12 +27,20 @@ export default function Signup() {
     try {
       await signup(name, email, password);
 
-      // Signup ke baad OTP verification page par jao
+      // ==========================================
+      // TEMPORARILY DISABLED - OTP VERIFICATION
+      // ==========================================
+
+      /*
       navigate("/verify-email", {
         state: {
           email: email.trim().toLowerCase(),
         },
       });
+      */
+
+      // Temporary flow: OTP ke bina signup ke baad login page par jao
+      navigate("/login");
     } catch (err) {
       setError(err.message || "Something went wrong.");
     }
