@@ -15,7 +15,7 @@ export default function HomeHeader({ name }) {
 
   const API_URL = "http://localhost:5000/api";
 
-  // Fetch notifications
+  // Fetch notifications from backend
   const fetchNotifications = async () => {
     try {
       setLoading(true);
@@ -46,12 +46,12 @@ export default function HomeHeader({ name }) {
     }
   };
 
-  // Fetch notifications when component loads
+  // Fetch when component loads
   useEffect(() => {
     fetchNotifications();
   }, []);
 
-  // Notification icon
+  // Get notification icon
   const getNotificationIcon = (type) => {
     switch (type) {
       case "joined":
@@ -68,9 +68,88 @@ export default function HomeHeader({ name }) {
     }
   };
 
-  // Open notifications
+  // Create notification title
+  const getNotificationTitle = (notification) => {
+    const userName =
+      notification.user?.name || "Someone";
+
+    switch (notification.type) {
+      case "joined":
+        return `${userName} joined the Khatm`;
+
+      case "claimed":
+        return `${userName} claimed Para ${notification.para}`;
+
+      case "completed":
+        return `${userName} completed Para ${notification.para}`;
+
+      default:
+        return "New Khatm activity";
+    }
+  };
+
+  // Create notification message
+  const getNotificationMessage = (notification) => {
+    const khatmName =
+      notification.khatm?.name ||
+      notification.khatm?.dedicatedTo ||
+      "your Khatm";
+
+    switch (notification.type) {
+      case "joined":
+        return `A new member joined ${khatmName}.`;
+
+      case "claimed":
+        return `Para ${notification.para} is now being read in ${khatmName}.`;
+
+      case "completed":
+        return `Para ${notification.para} has been completed in ${khatmName}.`;
+
+      default:
+        return "There is a new update in your Khatm.";
+    }
+  };
+
+  // Format notification time
+  const getTimeAgo = (date) => {
+    if (!date) return "";
+
+    const seconds = Math.floor(
+      (new Date() - new Date(date)) / 1000
+    );
+
+    if (seconds < 60) {
+      return "Just now";
+    }
+
+    const minutes = Math.floor(seconds / 60);
+
+    if (minutes < 60) {
+      return `${minutes}m ago`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+
+    if (hours < 24) {
+      return `${hours}h ago`;
+    }
+
+    const days = Math.floor(hours / 24);
+
+    if (days === 1) {
+      return "Yesterday";
+    }
+
+    if (days < 7) {
+      return `${days}d ago`;
+    }
+
+    return new Date(date).toLocaleDateString();
+  };
+
+  // Open / close notifications
   const handleNotificationClick = () => {
-    setIsOpen(!isOpen);
+    setIsOpen((prev) => !prev);
 
     if (!isOpen) {
       fetchNotifications();
@@ -79,7 +158,6 @@ export default function HomeHeader({ name }) {
 
   return (
     <div className="flex items-center justify-between mb-6 relative">
-      
       {/* Greeting */}
       <div>
         <p className="text-ink-soft text-[15px]">
@@ -111,7 +189,6 @@ export default function HomeHeader({ name }) {
         {/* Notification Dropdown */}
         {isOpen && (
           <div className="absolute right-0 top-14 w-[320px] max-w-[calc(100vw-40px)] bg-cream-card border border-emerald-deep/10 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-up">
-            
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-emerald-deep/10">
               <div>
@@ -138,7 +215,6 @@ export default function HomeHeader({ name }) {
 
             {/* Notifications */}
             <div className="max-h-[350px] overflow-y-auto">
-
               {loading ? (
                 <div className="px-4 py-10 text-center">
                   <p className="text-sm text-ink-soft">
@@ -165,12 +241,12 @@ export default function HomeHeader({ name }) {
               ) : (
                 notifications.map((notification) => {
                   const Icon = getNotificationIcon(
-                    notification.action
+                    notification.type
                   );
 
                   return (
                     <div
-                      key={notification._id}
+                      key={notification.id}
                       className="flex gap-3 px-4 py-4 hover:bg-emerald-soft/50 transition-colors border-b border-emerald-deep/5 last:border-0"
                     >
                       {/* Icon */}
@@ -184,42 +260,40 @@ export default function HomeHeader({ name }) {
                       {/* Content */}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-
                           <p className="text-sm font-semibold text-ink">
-                            {notification.title}
+                            {getNotificationTitle(notification)}
                           </p>
 
                           <span className="text-[10px] text-ink-soft whitespace-nowrap">
-                            {notification.time}
+                            {getTimeAgo(
+                              notification.createdAt
+                            )}
                           </span>
-
                         </div>
 
                         <p className="text-xs text-ink-soft mt-1 leading-relaxed">
-                          {notification.message}
+                          {getNotificationMessage(
+                            notification
+                          )}
                         </p>
                       </div>
                     </div>
                   );
                 })
               )}
-
             </div>
 
             {/* Footer */}
             {notifications.length > 0 && (
               <div className="px-4 py-3 border-t border-emerald-deep/10">
                 <button
-                  onClick={() => setNotifications([])}
                   className="w-full flex items-center justify-center gap-2 text-xs font-semibold text-emerald-deep hover:opacity-70 transition-opacity"
                 >
                   <CheckCircle2 size={15} />
-
                   Mark all as read
                 </button>
               </div>
             )}
-
           </div>
         )}
       </div>
