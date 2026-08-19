@@ -26,9 +26,16 @@ export default function HomeHeader({ name }) {
       const token = localStorage.getItem("token");
 
       if (!token) {
+        console.error("No token found");
+
         setNotifications([]);
         return;
       }
+
+      console.log(
+        "Fetching notifications from:",
+        `${API_URL}/notifications`
+      );
 
       const response = await fetch(
         `${API_URL}/notifications`,
@@ -39,11 +46,26 @@ export default function HomeHeader({ name }) {
         }
       );
 
+      console.log(
+        "Notifications response status:",
+        response.status
+      );
+
       const data = await response.json();
+
+      console.log(
+        "Notifications response:",
+        data
+      );
 
       if (data.success) {
         setNotifications(data.data || []);
       } else {
+        console.error(
+          "Failed to fetch notifications:",
+          data
+        );
+
         setNotifications([]);
       }
     } catch (error) {
@@ -58,14 +80,30 @@ export default function HomeHeader({ name }) {
     }
   };
 
-  // Mark all notifications as read permanently
+  // Mark all notifications as read
   const handleMarkAllAsRead = async () => {
+    console.log("MARK ALL AS READ CLICKED");
+
     try {
       setMarkingAsRead(true);
 
       const token = localStorage.getItem("token");
 
+      console.log(
+        "Token exists:",
+        !!token
+      );
+
+      console.log(
+        "Read-all request URL:",
+        `${API_URL}/notifications/read-all`
+      );
+
       if (!token) {
+        console.error(
+          "No authentication token found"
+        );
+
         return;
       }
 
@@ -81,14 +119,28 @@ export default function HomeHeader({ name }) {
         }
       );
 
+      console.log(
+        "Read-all response status:",
+        response.status
+      );
+
       const data = await response.json();
 
+      console.log(
+        "Read-all response:",
+        data
+      );
+
       if (data.success) {
-        // Remove notifications from UI
+        console.log(
+          "Notifications successfully marked as read"
+        );
+
         setNotifications([]);
       } else {
         console.error(
-          "Failed to mark notifications as read"
+          "Failed to mark notifications as read:",
+          data
         );
       }
     } catch (error) {
@@ -106,7 +158,7 @@ export default function HomeHeader({ name }) {
     fetchNotifications();
   }, []);
 
-  // Refresh notifications when dropdown opens
+  // Open / close notification dropdown
   const handleNotificationClick = () => {
     setIsOpen((previous) => {
       const next = !previous;
@@ -119,7 +171,7 @@ export default function HomeHeader({ name }) {
     });
   };
 
-  // Get icon based on notification action
+  // Get notification icon
   const getNotificationIcon = (action) => {
     switch (action) {
       case "joined":
@@ -139,7 +191,9 @@ export default function HomeHeader({ name }) {
   // Generate notification content
   const getNotificationContent = (notification) => {
     const userName =
-      notification.user?.name || "A member";
+      notification.actor?.name ||
+      notification.user?.name ||
+      "A member";
 
     const khatmName =
       notification.khatm?.title ||
@@ -155,14 +209,14 @@ export default function HomeHeader({ name }) {
 
       case "claimed":
         return {
-          title: `Para ${notification.para} was claimed`,
-          message: `${userName} claimed Para ${notification.para} in "${khatmName}".`,
+          title: `${userName} claimed Para ${notification.para}`,
+          message: `Para ${notification.para} is now being read in ${khatmName}.`,
         };
 
       case "completed":
         return {
-          title: `Para ${notification.para} was completed`,
-          message: `${userName} completed Para ${notification.para} in "${khatmName}".`,
+          title: `${userName} completed Para ${notification.para}`,
+          message: `Para ${notification.para} has been completed in ${khatmName}.`,
         };
 
       default:
@@ -180,10 +234,12 @@ export default function HomeHeader({ name }) {
     }
 
     const now = new Date();
+
     const activityDate = new Date(date);
 
     const difference =
-      now.getTime() - activityDate.getTime();
+      now.getTime() -
+      activityDate.getTime();
 
     const seconds = Math.floor(
       difference / 1000
@@ -263,6 +319,7 @@ export default function HomeHeader({ name }) {
         {/* Notification Dropdown */}
         {isOpen && (
           <div className="absolute right-0 top-14 w-[320px] max-w-[calc(100vw-40px)] bg-cream-card border border-emerald-deep/10 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-up">
+            
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-emerald-deep/10">
               <div>
@@ -367,6 +424,7 @@ export default function HomeHeader({ name }) {
             {notifications.length > 0 && (
               <div className="px-4 py-3 border-t border-emerald-deep/10">
                 <button
+                  type="button"
                   onClick={handleMarkAllAsRead}
                   disabled={markingAsRead}
                   className="w-full flex items-center justify-center gap-2 text-xs font-semibold text-emerald-deep hover:opacity-70 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
