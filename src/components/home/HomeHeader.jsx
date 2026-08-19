@@ -1,19 +1,12 @@
 import { useEffect, useState } from "react";
-import {
-  Bell,
-  X,
-  BookOpen,
-  Users,
-  CheckCircle2,
-  BellOff,
-} from "lucide-react";
+import { Bell, X, BookOpen, Users, CheckCircle2, BellOff } from "lucide-react";
 
 export default function HomeHeader({ name }) {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const API_URL = "http://localhost:5000/api";
+  const API_URL = "https://quran-khatm-backend-1.onrender.com/api";
 
   // Fetch notifications from backend
   const fetchNotifications = async () => {
@@ -22,14 +15,11 @@ export default function HomeHeader({ name }) {
 
       const token = localStorage.getItem("token");
 
-      const response = await fetch(
-        `${API_URL}/notifications`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/notifications`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const data = await response.json();
 
@@ -37,10 +27,7 @@ export default function HomeHeader({ name }) {
         setNotifications(data.data || []);
       }
     } catch (error) {
-      console.error(
-        "Failed to fetch notifications:",
-        error
-      );
+      console.error("Failed to fetch notifications:", error);
     } finally {
       setLoading(false);
     }
@@ -70,8 +57,7 @@ export default function HomeHeader({ name }) {
 
   // Create notification title
   const getNotificationTitle = (notification) => {
-    const userName =
-      notification.user?.name || "Someone";
+    const userName = notification.user?.name || "Someone";
 
     switch (notification.type) {
       case "joined":
@@ -114,9 +100,7 @@ export default function HomeHeader({ name }) {
   const getTimeAgo = (date) => {
     if (!date) return "";
 
-    const seconds = Math.floor(
-      (new Date() - new Date(date)) / 1000
-    );
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
 
     if (seconds < 60) {
       return "Just now";
@@ -160,9 +144,7 @@ export default function HomeHeader({ name }) {
     <div className="flex items-center justify-between mb-6 relative">
       {/* Greeting */}
       <div>
-        <p className="text-ink-soft text-[15px]">
-          Assalamu Alaikum 👋
-        </p>
+        <p className="text-ink-soft text-[15px]">Assalamu Alaikum 👋</p>
 
         <h1 className="font-display text-xl font-semibold text-ink mt-0.5">
           Good to see you again, {name}
@@ -176,10 +158,7 @@ export default function HomeHeader({ name }) {
           className="relative w-11 h-11 rounded-full bg-cream-card border border-emerald-deep/10 flex items-center justify-center shrink-0 ml-3 hover:bg-emerald-soft transition-colors"
           aria-label="Notifications"
         >
-          <Bell
-            size={18}
-            className="text-emerald-deep"
-          />
+          <Bell size={18} className="text-emerald-deep" />
 
           {notifications.length > 0 && (
             <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gold border border-cream-card" />
@@ -206,10 +185,7 @@ export default function HomeHeader({ name }) {
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-emerald-soft transition-colors"
                 aria-label="Close notifications"
               >
-                <X
-                  size={17}
-                  className="text-ink-soft"
-                />
+                <X size={17} className="text-ink-soft" />
               </button>
             </div>
 
@@ -224,10 +200,7 @@ export default function HomeHeader({ name }) {
               ) : notifications.length === 0 ? (
                 <div className="px-4 py-10 text-center">
                   <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-emerald-soft flex items-center justify-center">
-                    <BellOff
-                      size={20}
-                      className="text-emerald-deep"
-                    />
+                    <BellOff size={20} className="text-emerald-deep" />
                   </div>
 
                   <p className="text-sm font-semibold text-ink">
@@ -240,9 +213,7 @@ export default function HomeHeader({ name }) {
                 </div>
               ) : (
                 notifications.map((notification) => {
-                  const Icon = getNotificationIcon(
-                    notification.type
-                  );
+                  const Icon = getNotificationIcon(notification.type);
 
                   return (
                     <div
@@ -251,10 +222,7 @@ export default function HomeHeader({ name }) {
                     >
                       {/* Icon */}
                       <div className="w-10 h-10 rounded-xl bg-emerald-soft flex items-center justify-center shrink-0">
-                        <Icon
-                          size={18}
-                          className="text-emerald-deep"
-                        />
+                        <Icon size={18} className="text-emerald-deep" />
                       </div>
 
                       {/* Content */}
@@ -265,16 +233,12 @@ export default function HomeHeader({ name }) {
                           </p>
 
                           <span className="text-[10px] text-ink-soft whitespace-nowrap">
-                            {getTimeAgo(
-                              notification.createdAt
-                            )}
+                            {getTimeAgo(notification.createdAt)}
                           </span>
                         </div>
 
                         <p className="text-xs text-ink-soft mt-1 leading-relaxed">
-                          {getNotificationMessage(
-                            notification
-                          )}
+                          {getNotificationMessage(notification)}
                         </p>
                       </div>
                     </div>
@@ -286,9 +250,7 @@ export default function HomeHeader({ name }) {
             {/* Footer */}
             {notifications.length > 0 && (
               <div className="px-4 py-3 border-t border-emerald-deep/10">
-                <button
-                  className="w-full flex items-center justify-center gap-2 text-xs font-semibold text-emerald-deep hover:opacity-70 transition-opacity"
-                >
+                <button className="w-full flex items-center justify-center gap-2 text-xs font-semibold text-emerald-deep hover:opacity-70 transition-opacity">
                   <CheckCircle2 size={15} />
                   Mark all as read
                 </button>
