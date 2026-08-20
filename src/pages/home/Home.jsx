@@ -5,6 +5,11 @@ import {
   BarChart3,
 } from "lucide-react";
 
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import { useAuth } from "../../context/AuthContext";
 import { useKhatms } from "../../context/KhatmContext";
 import { paraProgress } from "../../data/mockData";
@@ -25,7 +30,12 @@ export default function Home() {
     activityLog,
     khatmLoading,
     readingProgress,
+    getReadingProgress,
   } = useKhatms();
+
+  // Local loading state for saved reading progress
+  const [readingProgressLoading, setReadingProgressLoading] =
+    useState(false);
 
   // Get active Khatm
   const activeKhatm = khatms.find(
@@ -50,21 +60,18 @@ export default function Home() {
         para.assignedTo;
 
       return (
-        String(assignedUserId) ===
-        userId
+        String(assignedUserId) === userId
       );
     }) || [];
 
   // Prefer a claimed Para first
   const claimedPara = myParas.find(
-    (para) =>
-      para.status === "claimed"
+    (para) => para.status === "claimed"
   );
 
   // If no claimed Para, show completed Para
   const completedPara = myParas.find(
-    (para) =>
-      para.status === "completed"
+    (para) => para.status === "completed"
   );
 
   // Main Para to show
@@ -77,6 +84,57 @@ export default function Home() {
   const progress = activeKhatm
     ? paraProgress(activeKhatm)
     : null;
+
+  /*
+    IMPORTANT:
+    After page refresh, Context state becomes empty.
+
+    So whenever Home loads and we know the active
+    Khatm + user's Para, fetch saved reading progress
+    again from the backend.
+  */
+  useEffect(() => {
+    if (!activeKhatm?._id || !myPara?.number) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadSavedReadingProgress() {
+      try {
+        setReadingProgressLoading(true);
+
+        await getReadingProgress(
+          activeKhatm._id,
+          myPara.number
+        );
+      } catch (error) {
+        if (!cancelled) {
+          console.error(
+            "Failed to load reading progress:",
+            error.message
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setReadingProgressLoading(false);
+        }
+      }
+    }
+
+    loadSavedReadingProgress();
+
+    return () => {
+      cancelled = true;
+    };
+
+    // getReadingProgress intentionally omitted
+    // because it is recreated by Context on each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeKhatm?._id,
+    myPara?.number,
+  ]);
 
   // Reading progress for the user's Para
   const readingProgressForPara =
@@ -91,12 +149,16 @@ export default function Home() {
     completedAyahs,
     totalAyahs,
     percentage,
-    loading:
-      paraProgressLoading,
+    loading: paraProgressLoading,
   } = useParaProgress(
     myPara?.number,
     readingProgressForPara
   );
+
+  // Combine both loading states
+  const isProgressLoading =
+    readingProgressLoading ||
+    paraProgressLoading;
 
   const quickActions = [
     {
@@ -162,9 +224,7 @@ export default function Home() {
         percentage={percentage}
         completedAyahs={completedAyahs}
         totalAyahs={totalAyahs}
-        progressLoading={
-          paraProgressLoading
-        }
+        progressLoading={isProgressLoading}
       />
 
       <p className="text-xs font-semibold text-ink-soft uppercase tracking-wide mb-3">
@@ -172,23 +232,20 @@ export default function Home() {
       </p>
 
       <div className="grid grid-cols-2 gap-3 mb-6">
-        {quickActions.map(
-          (action) => (
-            <QuickActionCard
-              key={action.to}
-              {...action}
-            />
-          )
-        )}
+        {quickActions.map((action) => (
+          <QuickActionCard
+            key={action.to}
+            {...action}
+          />
+        ))}
       </div>
 
-      {activeKhatm &&
-        progress && (
-          <ActiveKhatmCard
-            khatm={activeKhatm}
-            progress={progress}
-          />
-        )}
+      {activeKhatm && progress && (
+        <ActiveKhatmCard
+          khatm={activeKhatm}
+          progress={progress}
+        />
+      )}
 
       {activeKhatm && (
         <ParaProgressCard
@@ -200,9 +257,7 @@ export default function Home() {
 
       {activeKhatm && (
         <ActivityPreview
-          khatmId={
-            activeKhatm._id
-          }
+          khatmId={activeKhatm._id}
           items={activityLog}
         />
       )}

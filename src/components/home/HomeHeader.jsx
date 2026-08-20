@@ -27,15 +27,9 @@ export default function HomeHeader({ name }) {
 
       if (!token) {
         console.error("No token found");
-
         setNotifications([]);
         return;
       }
-
-      console.log(
-        "Fetching notifications from:",
-        `${API_URL}/notifications`
-      );
 
       const response = await fetch(
         `${API_URL}/notifications`,
@@ -44,11 +38,6 @@ export default function HomeHeader({ name }) {
             Authorization: `Bearer ${token}`,
           },
         }
-      );
-
-      console.log(
-        "Notifications response status:",
-        response.status
       );
 
       const data = await response.json();
@@ -82,22 +71,10 @@ export default function HomeHeader({ name }) {
 
   // Mark all notifications as read
   const handleMarkAllAsRead = async () => {
-    console.log("MARK ALL AS READ CLICKED");
-
     try {
       setMarkingAsRead(true);
 
       const token = localStorage.getItem("token");
-
-      console.log(
-        "Token exists:",
-        !!token
-      );
-
-      console.log(
-        "Read-all request URL:",
-        `${API_URL}/notifications/read-all`
-      );
 
       if (!token) {
         console.error(
@@ -119,11 +96,6 @@ export default function HomeHeader({ name }) {
         }
       );
 
-      console.log(
-        "Read-all response status:",
-        response.status
-      );
-
       const data = await response.json();
 
       console.log(
@@ -132,11 +104,8 @@ export default function HomeHeader({ name }) {
       );
 
       if (data.success) {
-        console.log(
-          "Notifications successfully marked as read"
-        );
-
         setNotifications([]);
+        setIsOpen(false);
       } else {
         console.error(
           "Failed to mark notifications as read:",
@@ -188,41 +157,54 @@ export default function HomeHeader({ name }) {
     }
   };
 
-  // Generate notification content
+  /*
+    IMPORTANT:
+    Backend message ko use nahi kar rahe.
+
+    Hume exact format chahiye:
+
+    Para 10 completed
+    Completed by Asres
+
+    Para 11 claimed
+    Claimed by Asres
+  */
   const getNotificationContent = (notification) => {
     const userName =
-      notification.actor?.name ||
       notification.user?.name ||
+      notification.actor?.name ||
       "A member";
 
-    const khatmName =
-      notification.khatm?.title ||
-      notification.khatm?.name ||
-      "your Khatm";
+    const paraNumber = notification.para;
 
     switch (notification.action) {
       case "joined":
         return {
           title: `${userName} joined the Khatm`,
-          message: `${userName} joined "${khatmName}".`,
+          message: `Joined by ${userName}`,
         };
 
       case "claimed":
         return {
-          title: `${userName} claimed Para ${notification.para}`,
-          message: `Para ${notification.para} is now being read in ${khatmName}.`,
+          title: `Para ${paraNumber} claimed`,
+          message: `Claimed by ${userName}`,
         };
 
       case "completed":
         return {
-          title: `${userName} completed Para ${notification.para}`,
-          message: `Para ${notification.para} has been completed in ${khatmName}.`,
+          title: `Para ${paraNumber} completed`,
+          message: `Completed by ${userName}`,
         };
 
       default:
         return {
-          title: "New Khatm activity",
-          message: `There is a new update in "${khatmName}".`,
+          title:
+            notification.title ||
+            "New Khatm activity",
+
+          message:
+            notification.message ||
+            "There is a new update.",
         };
     }
   };
@@ -234,7 +216,6 @@ export default function HomeHeader({ name }) {
     }
 
     const now = new Date();
-
     const activityDate = new Date(date);
 
     const difference =
@@ -288,6 +269,7 @@ export default function HomeHeader({ name }) {
 
   return (
     <div className="flex items-center justify-between mb-6 relative">
+
       {/* Greeting */}
       <div>
         <p className="text-ink-soft text-[15px]">
@@ -301,6 +283,7 @@ export default function HomeHeader({ name }) {
 
       {/* Notification */}
       <div className="relative">
+
         <button
           onClick={handleNotificationClick}
           className="relative w-11 h-11 rounded-full bg-cream-card border border-emerald-deep/10 flex items-center justify-center shrink-0 ml-3 hover:bg-emerald-soft transition-colors"
@@ -319,9 +302,10 @@ export default function HomeHeader({ name }) {
         {/* Notification Dropdown */}
         {isOpen && (
           <div className="absolute right-0 top-14 w-[320px] max-w-[calc(100vw-40px)] bg-cream-card border border-emerald-deep/10 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-up">
-            
+
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-emerald-deep/10">
+
               <div>
                 <h3 className="font-display text-base font-semibold text-ink">
                   Notifications
@@ -342,23 +326,31 @@ export default function HomeHeader({ name }) {
                   className="text-ink-soft"
                 />
               </button>
+
             </div>
 
             {/* Notifications */}
             <div className="max-h-[430px] overflow-y-auto">
+
               {loading ? (
+
                 <div className="px-4 py-10 text-center">
                   <p className="text-sm text-ink-soft">
                     Loading notifications...
                   </p>
                 </div>
+
               ) : notifications.length === 0 ? (
+
                 <div className="px-4 py-10 text-center">
+
                   <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-emerald-soft flex items-center justify-center">
+
                     <BellOff
                       size={20}
                       className="text-emerald-deep"
                     />
+
                   </div>
 
                   <p className="text-sm font-semibold text-ink">
@@ -368,78 +360,98 @@ export default function HomeHeader({ name }) {
                   <p className="text-xs text-ink-soft mt-1">
                     Khatm updates will appear here.
                   </p>
+
                 </div>
+
               ) : (
-                notifications.map(
-                  (notification) => {
-                    const Icon =
-                      getNotificationIcon(
-                        notification.action
-                      );
 
-                    const content =
-                      getNotificationContent(
-                        notification
-                      );
-
-                    return (
-                      <div
-                        key={notification._id}
-                        className="flex gap-3 px-4 py-4 hover:bg-emerald-soft/50 transition-colors border-b border-emerald-deep/5 last:border-0"
-                      >
-                        {/* Activity Icon */}
-                        <div className="w-10 h-10 rounded-xl bg-emerald-soft flex items-center justify-center shrink-0">
-                          <Icon
-                            size={18}
-                            className="text-emerald-deep"
-                          />
-                        </div>
-
-                        {/* Activity Content */}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-sm font-semibold text-ink leading-snug">
-                              {content.title}
-                            </p>
-
-                            <span className="text-[10px] text-ink-soft whitespace-nowrap pt-0.5">
-                              {getTimeAgo(
-                                notification.createdAt
-                              )}
-                            </span>
-                          </div>
-
-                          <p className="text-xs text-ink-soft mt-1 leading-relaxed">
-                            {content.message}
-                          </p>
-                        </div>
-                      </div>
+                notifications.map((notification) => {
+                  const Icon =
+                    getNotificationIcon(
+                      notification.action
                     );
-                  }
-                )
+
+                  const content =
+                    getNotificationContent(
+                      notification
+                    );
+
+                  return (
+                    <div
+                      key={notification._id}
+                      className="flex gap-3 px-4 py-4 hover:bg-emerald-soft/50 transition-colors border-b border-emerald-deep/5 last:border-0"
+                    >
+
+                      {/* Activity Icon */}
+                      <div className="w-10 h-10 rounded-xl bg-emerald-soft flex items-center justify-center shrink-0">
+
+                        <Icon
+                          size={18}
+                          className="text-emerald-deep"
+                        />
+
+                      </div>
+
+                      {/* Activity Content */}
+                      <div className="min-w-0 flex-1">
+
+                        <div className="flex items-start justify-between gap-2">
+
+                          <p className="text-sm font-semibold text-ink leading-snug">
+                            {content.title}
+                          </p>
+
+                          <span className="text-[10px] text-ink-soft whitespace-nowrap pt-0.5">
+                            {getTimeAgo(
+                              notification.createdAt
+                            )}
+                          </span>
+
+                        </div>
+
+                        <p className="text-xs text-ink-soft mt-1 leading-relaxed">
+                          {content.message}
+                        </p>
+
+                      </div>
+
+                    </div>
+                  );
+                })
+
               )}
+
             </div>
 
             {/* Footer */}
             {notifications.length > 0 && (
+
               <div className="px-4 py-3 border-t border-emerald-deep/10">
+
                 <button
                   type="button"
                   onClick={handleMarkAllAsRead}
                   disabled={markingAsRead}
                   className="w-full flex items-center justify-center gap-2 text-xs font-semibold text-emerald-deep hover:opacity-70 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 >
+
                   <CheckCircle2 size={15} />
 
                   {markingAsRead
                     ? "Marking as read..."
                     : "Mark all as read"}
+
                 </button>
+
               </div>
+
             )}
+
           </div>
         )}
+
       </div>
+
     </div>
   );
 }

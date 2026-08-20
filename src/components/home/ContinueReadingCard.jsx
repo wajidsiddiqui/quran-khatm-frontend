@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
-import { BookOpenText, ArrowRight } from "lucide-react";
+import {
+  BookOpenText,
+  ArrowRight,
+} from "lucide-react";
 
 import Button from "../common/Button";
 
@@ -13,9 +16,13 @@ export default function ContinueReadingCard({
 }) {
   const hasPara = Boolean(khatm && para);
 
-  const isCompleted = para?.status === "completed";
+  const isCompleted =
+    para?.status === "completed";
 
-  const safePercentage = Math.min(100, Math.max(0, Number(percentage) || 0));
+  const safePercentage = Math.min(
+    100,
+    Math.max(0, Number(percentage) || 0)
+  );
 
   return (
     <div
@@ -29,14 +36,16 @@ export default function ContinueReadingCard({
       <div
         className="absolute -right-10 -top-10 h-40 w-40 rounded-full"
         style={{
-          background: "rgba(251, 191, 36, 0.12)",
+          background:
+            "rgba(251, 191, 36, 0.12)",
         }}
       />
 
       <div
         className="absolute -right-4 bottom-0 h-28 w-28 rounded-full"
         style={{
-          background: "rgba(255, 255, 255, 0.05)",
+          background:
+            "rgba(255, 255, 255, 0.05)",
         }}
       />
 
@@ -44,10 +53,14 @@ export default function ContinueReadingCard({
       <div
         className="absolute right-5 top-5"
         style={{
-          color: "rgba(255, 255, 255, 0.12)",
+          color:
+            "rgba(255, 255, 255, 0.12)",
         }}
       >
-        <BookOpenText size={70} strokeWidth={1.2} />
+        <BookOpenText
+          size={70}
+          strokeWidth={1.2}
+        />
       </div>
 
       {/* Main Content */}
@@ -80,7 +93,9 @@ export default function ContinueReadingCard({
                 color: "#D1FAE5",
               }}
             >
-              {isCompleted ? "● Completed" : "● In Progress"}
+              {isCompleted
+                ? "● Completed"
+                : "● In Progress"}
             </p>
 
             {/* Actual Para Reading Progress */}
@@ -93,7 +108,8 @@ export default function ContinueReadingCard({
                       color: "#D1FAE5",
                     }}
                   >
-                    Your progress in Para {para.number}
+                    Your progress in Para{" "}
+                    {para.number}
                   </p>
 
                   <span
@@ -102,7 +118,9 @@ export default function ContinueReadingCard({
                       color: "#FFFFFF",
                     }}
                   >
-                    {progressLoading ? "..." : `${safePercentage}%`}
+                    {progressLoading
+                      ? "..."
+                      : `${safePercentage}%`}
                   </span>
                 </div>
 
@@ -112,22 +130,26 @@ export default function ContinueReadingCard({
                     className="h-full rounded-full transition-all duration-500"
                     style={{
                       width: `${safePercentage}%`,
-                      background: "#FCD34D",
+                      background:
+                        "#FCD34D",
                     }}
                   />
                 </div>
 
                 {/* Ayah Count */}
-                {!progressLoading && totalAyahs > 0 && (
-                  <p
-                    className="mt-2 text-xs"
-                    style={{
-                      color: "rgba(209, 250, 229, 0.75)",
-                    }}
-                  >
-                    {completedAyahs} of {totalAyahs} Ayahs
-                  </p>
-                )}
+                {!progressLoading &&
+                  totalAyahs > 0 && (
+                    <p
+                      className="mt-2 text-xs"
+                      style={{
+                        color:
+                          "rgba(209, 250, 229, 0.75)",
+                      }}
+                    >
+                      {completedAyahs} of{" "}
+                      {totalAyahs} Ayahs
+                    </p>
+                  )}
               </div>
             )}
 
@@ -136,19 +158,29 @@ export default function ContinueReadingCard({
               <div
                 className="mb-6 rounded-xl px-4 py-3 text-sm"
                 style={{
-                  background: "rgba(255, 255, 255, 0.08)",
+                  background:
+                    "rgba(255, 255, 255, 0.08)",
                   color: "#D1FAE5",
                 }}
               >
-                You have completed reading this Para.
+                You have completed
+                reading this Para.
               </div>
             )}
 
             {/* Continue Button */}
             <div className="flex justify-end">
-              <Link to={`/khatm/${khatm._id}/para/${para.number}/read`}>
-                <Button variant="gold" size="sm" icon={ArrowRight}>
-                  {isCompleted ? "Read Again" : "Continue Reading"}
+              <Link
+                to={`/khatm/${khatm._id}/para/${para.number}/read`}
+              >
+                <Button
+                  variant="gold"
+                  size="sm"
+                  icon={ArrowRight}
+                >
+                  {isCompleted
+                    ? "Read Again"
+                    : "Continue Reading"}
                 </Button>
               </Link>
             </div>
@@ -171,12 +203,18 @@ export default function ContinueReadingCard({
                 color: "#D1FAE5",
               }}
             >
-              Pick up the Quran and begin a peaceful reading session.
+              Pick up the Quran and
+              begin a peaceful reading
+              session.
             </p>
 
             <div className="flex justify-end">
               <Link to="/quran">
-                <Button variant="gold" size="sm" icon={ArrowRight}>
+                <Button
+                  variant="gold"
+                  size="sm"
+                  icon={ArrowRight}
+                >
                   Browse the Quran
                 </Button>
               </Link>
