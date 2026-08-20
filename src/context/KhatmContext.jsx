@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-} from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 import { useAuth } from "./AuthContext";
 
@@ -18,6 +13,11 @@ import {
   getActivity,
 } from "../services/khatmApi";
 
+import {
+  getReadingProgress as getReadingProgressApi,
+  saveReadingProgress as saveReadingProgressApi,
+} from "../services/readingProgressApi";
+
 const KhatmContext = createContext(null);
 
 export function KhatmProvider({ children }) {
@@ -28,11 +28,16 @@ export function KhatmProvider({ children }) {
   const [activityLog, setActivityLog] = useState([]);
   const [khatmLoading, setKhatmLoading] = useState(false);
 
+  // Reading progress
+  // Stored using:
+  // "khatmId-paraNumber" as the key.
+  const [readingProgress, setReadingProgress] = useState({});
+
   // Load all Khatms belonging to the logged-in user
   const loadKhatms = async () => {
     if (!token) {
       setKhatms([]);
-      return;
+      return [];
     }
 
     try {
@@ -40,14 +45,17 @@ export function KhatmProvider({ children }) {
 
       const result = await getMyKhatms(token);
 
-      setKhatms(result.data || []);
+      const loadedKhatms = result.data || [];
+
+      setKhatms(loadedKhatms);
+
+      return loadedKhatms;
     } catch (error) {
-      console.error(
-        "Failed to load Khatms:",
-        error.message
-      );
+      console.error("Failed to load Khatms:", error.message);
 
       setKhatms([]);
+
+      return [];
     } finally {
       setKhatmLoading(false);
     }
@@ -55,20 +63,19 @@ export function KhatmProvider({ children }) {
 
   // Load Khatms when authentication changes
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && token) {
       loadKhatms();
     } else {
       setKhatms([]);
       setMembers([]);
       setActivityLog([]);
+      setReadingProgress({});
     }
   }, [isAuthenticated, token]);
 
   // Get one Khatm from local state
   const getKhatm = (id) => {
-    return khatms.find(
-      (k) => (k._id || k.id) === id
-    );
+    return khatms.find((k) => String(k._id || k.id) === String(id));
   };
 
   // Get Khatm using invite code
@@ -77,10 +84,7 @@ export function KhatmProvider({ children }) {
       throw new Error("You must be logged in.");
     }
 
-    const result = await getKhatmByInviteCode(
-      inviteCode,
-      token
-    );
+    const result = await getKhatmByInviteCode(inviteCode, token);
 
     return result.data;
   };
@@ -91,142 +95,140 @@ export function KhatmProvider({ children }) {
       throw new Error("You must be logged in.");
     }
 
-    const result = await createKhatmApi(
-      data,
-      token
-    );
+    const result = await createKhatmApi(data, token);
 
-    const newKhatm = result.data;
+    // Reload fresh data from backend
+    await loadKhatms();
 
-    setKhatms((prev) => [
-      newKhatm,
-      ...prev,
-    ]);
-
-    return newKhatm;
+    return result.data;
   };
 
-  // Join a Khatm using Khatm ID
+  // Join a Khatm
   const joinKhatm = async (khatmId) => {
     if (!token) {
       throw new Error("You must be logged in.");
     }
 
-    const result = await joinKhatmApi(
-      khatmId,
-      token
-    );
+    const result = await joinKhatmApi(khatmId, token);
 
-    const joinedKhatm = result.data;
+    // Reload fresh Khatm data
+    await loadKhatms();
 
-    setKhatms((prev) => {
-      const joinedId =
-        joinedKhatm._id || joinedKhatm.id;
-
-      const exists = prev.some(
-        (k) =>
-          (k._id || k.id) === joinedId
-      );
-
-      if (exists) {
-        return prev.map((k) =>
-          (k._id || k.id) === joinedId
-            ? joinedKhatm
-            : k
-        );
-      }
-
-      return [
-        joinedKhatm,
-        ...prev,
-      ];
-    });
-
-    return joinedKhatm;
+    return result.data;
   };
 
   // Claim a Para
-  const claimPara = async (
-    khatmId,
-    paraNumber
-  ) => {
+  const claimPara = async (khatmId, paraNumber) => {
     if (!token) {
       throw new Error("You must be logged in.");
     }
 
-    const result = await claimParaApi(
-      khatmId,
-      paraNumber,
-      token
-    );
+    const result = await claimParaApi(khatmId, paraNumber, token);
 
-    const updatedKhatm = result.data;
+    // IMPORTANT:
+    // Get fresh populated Khatm data from backend
+    const freshKhatms = await loadKhatms();
 
-    setKhatms((prev) =>
-      prev.map((k) =>
-        (k._id || k.id) === khatmId
-          ? updatedKhatm
-          : k
-      )
-    );
+    const updatedKhatm =
+      freshKhatms.find((k) => String(k._id || k.id) === String(khatmId)) ||
+      result.data;
 
     return updatedKhatm;
   };
 
   // Complete a Para
-  const completePara = async (
-    khatmId,
-    paraNumber
-  ) => {
+  const completePara = async (khatmId, paraNumber) => {
     if (!token) {
       throw new Error("You must be logged in.");
     }
 
-    const result = await completeParaApi(
-      khatmId,
-      paraNumber,
-      token
-    );
+    const result = await completeParaApi(khatmId, paraNumber, token);
 
-    const updatedKhatm = result.data;
+    // IMPORTANT:
+    // Get fresh populated Khatm data from backend
+    const freshKhatms = await loadKhatms();
 
-    setKhatms((prev) =>
-      prev.map((k) =>
-        (k._id || k.id) === khatmId
-          ? updatedKhatm
-          : k
-      )
-    );
+    const updatedKhatm =
+      freshKhatms.find((k) => String(k._id || k.id) === String(khatmId)) ||
+      result.data;
 
     return updatedKhatm;
   };
 
   // Load members of a Khatm
   const loadMembers = async (khatmId) => {
-    if (!token) return [];
+    if (!token) {
+      return [];
+    }
 
-    const result = await getMembers(
-      khatmId,
-      token
-    );
+    const result = await getMembers(khatmId, token);
 
-    setMembers(result.data || []);
+    const loadedMembers = result.data || [];
 
-    return result.data || [];
+    setMembers(loadedMembers);
+
+    return loadedMembers;
   };
 
   // Load activity of a Khatm
   const loadActivity = async (khatmId) => {
-    if (!token) return [];
+    if (!token) {
+      return [];
+    }
 
-    const result = await getActivity(
+    const result = await getActivity(khatmId, token);
+
+    const loadedActivity = result.data || [];
+
+    setActivityLog(loadedActivity);
+
+    return loadedActivity;
+  };
+
+  // Get saved reading progress
+  const getReadingProgress = async (khatmId, paraNumber) => {
+    if (!token) {
+      throw new Error("You must be logged in.");
+    }
+
+    const result = await getReadingProgressApi(khatmId, paraNumber, token);
+
+    const progress = result.data || null;
+
+    const key = `${khatmId}-${paraNumber}`;
+
+    setReadingProgress((prev) => ({
+      ...prev,
+      [key]: progress,
+    }));
+
+    return progress;
+  };
+
+  // Save/update confirmed reading progress
+  const saveReadingProgress = async (khatmId, paraNumber, data) => {
+    if (!token) {
+      throw new Error("You must be logged in.");
+    }
+
+    const result = await saveReadingProgressApi(
       khatmId,
-      token
+      paraNumber,
+      data,
+      token,
     );
 
-    setActivityLog(result.data || []);
+    const progress = result.data;
 
-    return result.data || [];
+    const key = `${khatmId}-${paraNumber}`;
+
+    // Update React state immediately
+    setReadingProgress((prev) => ({
+      ...prev,
+      [key]: progress,
+    }));
+
+    return progress;
   };
 
   return (
@@ -237,6 +239,11 @@ export function KhatmProvider({ children }) {
         members,
         activityLog,
         khatmLoading,
+
+        // Reading Progress
+        readingProgress,
+        getReadingProgress,
+        saveReadingProgress,
 
         loadKhatms,
         getKhatm,
@@ -258,9 +265,7 @@ export function useKhatms() {
   const ctx = useContext(KhatmContext);
 
   if (!ctx) {
-    throw new Error(
-      "useKhatms must be used within KhatmProvider"
-    );
+    throw new Error("useKhatms must be used within KhatmProvider");
   }
 
   return ctx;

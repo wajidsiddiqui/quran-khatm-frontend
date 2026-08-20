@@ -1,9 +1,21 @@
 import { Link } from "react-router-dom";
 import { BookOpenText, ArrowRight } from "lucide-react";
+
 import Button from "../common/Button";
 
-export default function ContinueReadingCard({ khatm, para }) {
+export default function ContinueReadingCard({
+  khatm,
+  para,
+  percentage = 0,
+  completedAyahs = 0,
+  totalAyahs = 0,
+  progressLoading = false,
+}) {
   const hasPara = Boolean(khatm && para);
+
+  const isCompleted = para?.status === "completed";
+
+  const safePercentage = Math.min(100, Math.max(0, Number(percentage) || 0));
 
   return (
     <div
@@ -51,6 +63,7 @@ export default function ContinueReadingCard({ khatm, para }) {
 
         {hasPara ? (
           <>
+            {/* Para Number */}
             <h2
               className="mb-2 font-display text-3xl font-semibold"
               style={{
@@ -60,33 +73,89 @@ export default function ContinueReadingCard({ khatm, para }) {
               Para {para.number}
             </h2>
 
+            {/* Status */}
             <p
-              className="mb-6 text-sm"
+              className="mb-5 text-sm"
               style={{
                 color: "#D1FAE5",
               }}
             >
-              {para.status === "completed"
-                ? "Completed · "
-                : "In progress · "}
-              {khatm?.dedicatedTo || "Your Khatm"}
+              {isCompleted ? "● Completed" : "● In Progress"}
             </p>
 
-            {/* Button Right Side */}
-            <div className="flex justify-end">
-              <Link
-                to={`/khatm/${khatm._id}/para/${para.number}/read`}
+            {/* Actual Para Reading Progress */}
+            {!isCompleted && (
+              <div className="mb-6">
+                <div className="mb-2 flex items-center justify-between">
+                  <p
+                    className="text-sm font-medium"
+                    style={{
+                      color: "#D1FAE5",
+                    }}
+                  >
+                    Your progress in Para {para.number}
+                  </p>
+
+                  <span
+                    className="text-sm font-bold"
+                    style={{
+                      color: "#FFFFFF",
+                    }}
+                  >
+                    {progressLoading ? "..." : `${safePercentage}%`}
+                  </span>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="h-2 w-full overflow-hidden rounded-full bg-white/15">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${safePercentage}%`,
+                      background: "#FCD34D",
+                    }}
+                  />
+                </div>
+
+                {/* Ayah Count */}
+                {!progressLoading && totalAyahs > 0 && (
+                  <p
+                    className="mt-2 text-xs"
+                    style={{
+                      color: "rgba(209, 250, 229, 0.75)",
+                    }}
+                  >
+                    {completedAyahs} of {totalAyahs} Ayahs
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Completed Message */}
+            {isCompleted && (
+              <div
+                className="mb-6 rounded-xl px-4 py-3 text-sm"
+                style={{
+                  background: "rgba(255, 255, 255, 0.08)",
+                  color: "#D1FAE5",
+                }}
               >
+                You have completed reading this Para.
+              </div>
+            )}
+
+            {/* Continue Button */}
+            <div className="flex justify-end">
+              <Link to={`/khatm/${khatm._id}/para/${para.number}/read`}>
                 <Button variant="gold" size="sm" icon={ArrowRight}>
-                  {para.status === "completed"
-                    ? "Read Again"
-                    : "Continue Reading"}
+                  {isCompleted ? "Read Again" : "Continue Reading"}
                 </Button>
               </Link>
             </div>
           </>
         ) : (
           <>
+            {/* No Para */}
             <h2
               className="mb-2 font-display text-3xl font-semibold"
               style={{
@@ -105,7 +174,6 @@ export default function ContinueReadingCard({ khatm, para }) {
               Pick up the Quran and begin a peaceful reading session.
             </p>
 
-            {/* Browse Quran Button - Right Side */}
             <div className="flex justify-end">
               <Link to="/quran">
                 <Button variant="gold" size="sm" icon={ArrowRight}>
