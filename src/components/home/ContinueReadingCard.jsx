@@ -544,7 +544,7 @@ function KhatmProgressCard({
 
           <p className="mt-2 max-w-sm text-sm leading-relaxed text-emerald-100/80">
             Join or start a Khatm to get a
-            Para assigned and track your
+            Juz assigned and track your
             reading progress here.
           </p>
 
@@ -559,6 +559,7 @@ function KhatmProgressCard({
               </Button>
             </Link>
           </div>
+
         </div>
       </div>
     );
@@ -593,18 +594,23 @@ function KhatmProgressCard({
             </p>
 
             <h2 className="mt-2 font-display text-3xl font-semibold text-white sm:text-4xl">
-              Para {para.number}
+              Juz {para.number}
             </h2>
 
             <p className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-100/90">
+
               <span className="relative h-1.5 w-1.5">
+
                 <span className="crc-glow absolute inset-0 rounded-full bg-gold" />
+
                 <span className="relative block h-1.5 w-1.5 rounded-full bg-gold" />
+
               </span>
 
               {isCompleted
                 ? "Completed"
                 : "In Progress"}
+
             </p>
 
           </div>
@@ -628,7 +634,7 @@ function KhatmProgressCard({
             <div className="flex items-center justify-between gap-4">
 
               <p className="text-sm font-medium text-emerald-100/80">
-                Your progress in Para{" "}
+                Your progress in Juz{" "}
                 {para.number}
               </p>
 
@@ -672,7 +678,7 @@ function KhatmProgressCard({
         {isCompleted && (
           <div className="mt-6 rounded-xl bg-white/[0.08] px-4 py-3 text-sm text-emerald-100">
             You have completed reading
-            this Para.
+            this Juz.
           </div>
         )}
 
@@ -702,7 +708,7 @@ function KhatmProgressCard({
 
 
 /* =========================================================
-   QURAN READING CARD
+   QURAN READING CARD — JUZ BASED
 ========================================================= */
 
 function QuranReadingCard({
@@ -769,38 +775,51 @@ function QuranReadingCard({
 
 
   const {
+    juzNumber,
+    juzCompletedAyahs = 0,
+    juzTotalAyahs = 0,
+    juzPercentage = 0,
+
     surahName,
     ayahNumber,
-    totalAyahs = 0,
+
     onContinue,
   } = quranReading;
 
 
-  const safeAyahNumber =
-    Math.max(
-      1,
-      Number(
-        ayahNumber,
-      ) || 1,
-    );
+  const safeJuzNumber =
+    Number(juzNumber) || 0;
 
-  const safeTotalAyahs =
+  const safeCompletedAyahs =
     Math.max(
       0,
       Number(
-        totalAyahs,
+        juzCompletedAyahs,
       ) || 0,
     );
 
+  const safeJuzTotalAyahs =
+    Math.max(
+      0,
+      Number(
+        juzTotalAyahs,
+      ) || 0,
+    );
 
-  const quranPercentage =
-    safeTotalAyahs > 0
+  const safeJuzPercentage =
+    safeJuzTotalAyahs > 0
       ? Math.min(
           100,
-          Math.round(
-            (safeAyahNumber /
-              safeTotalAyahs) *
-              100,
+          Math.max(
+            0,
+            Number(
+              juzPercentage,
+            ) ||
+              Math.round(
+                (safeCompletedAyahs /
+                  safeJuzTotalAyahs) *
+                  100,
+              ),
           ),
         )
       : 0;
@@ -815,7 +834,9 @@ function QuranReadingCard({
       }}
     >
 
-      {/* CLEAN SINGLE CALLIGRAPHY */}
+      {/* =================================================
+          CLEAN SINGLE CALLIGRAPHY
+      ================================================== */}
 
       <CalligraphyWatermark
         text="وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا"
@@ -850,13 +871,25 @@ function QuranReadingCard({
               Last Read
             </h3>
 
-            <p className="mt-2 truncate font-quran text-base font-semibold text-emerald-deep sm:text-lg">
-              {surahName}
+
+            {/* MAIN JUZ */}
+
+            <p className="mt-2 font-display text-xl font-bold text-emerald-deep sm:text-2xl">
+              {safeJuzNumber
+                ? `Juz ${safeJuzNumber}`
+                : "Quran Reading"}
             </p>
 
-            <span className="mt-1.5 inline-block rounded-full bg-emerald-soft px-2.5 py-0.5 text-xs font-semibold text-emerald-deep">
-              Ayah {safeAyahNumber}
-            </span>
+
+            {/* EXACT SAVED POSITION */}
+
+            <p className="mt-1 truncate font-quran text-sm font-semibold text-emerald-deep/75 sm:text-base">
+              {surahName ||
+                "Quran"}
+              {" · "}
+              Ayah{" "}
+              {ayahNumber}
+            </p>
 
           </div>
 
@@ -875,7 +908,8 @@ function QuranReadingCard({
 
 
         {/* =================================================
-            SAME PROGRESS ARCHITECTURE AS KHATM
+            JUZ PROGRESS
+            SAME STRUCTURE AS KHATM
         ================================================== */}
 
         <div className="mt-6">
@@ -883,60 +917,66 @@ function QuranReadingCard({
           <div className="flex items-center justify-between gap-4">
 
             <p className="text-sm font-medium text-ink-soft">
-              Your progress in{" "}
-              {surahName}
+              {safeJuzNumber
+                ? `Your progress in Juz ${safeJuzNumber}`
+                : "Your Quran reading progress"}
             </p>
 
             <span className="shrink-0 text-sm font-bold text-emerald-deep">
-              {safeTotalAyahs > 0
-                ? `${quranPercentage}%`
+              {safeJuzTotalAyahs >
+              0
+                ? `${safeJuzPercentage}%`
                 : "..."}
             </span>
 
           </div>
 
 
-          {/* TRACK */}
+          {/* =================================================
+              PROGRESS BAR
+          ================================================== */}
 
           <div className="relative mt-2 h-2.5 w-full overflow-hidden rounded-full bg-emerald-deep/10">
-
-            {/* ACTUAL PROGRESS */}
 
             <div
               className="relative h-full rounded-full bg-gradient-to-r from-emerald-deep via-emerald-700 to-emerald-600 transition-all duration-700 ease-out"
               style={{
                 width:
-                  safeTotalAyahs > 0
-                    ? `${quranPercentage}%`
+                  safeJuzTotalAyahs >
+                  0
+                    ? `${safeJuzPercentage}%`
                     : "0%",
               }}
             />
 
-            {/* SHIMMER ONLY OVER THE ACTUAL TRACK */}
-
-            {safeTotalAyahs > 0 &&
-              quranPercentage > 0 && (
-                <div
-                  className="crc-shimmer pointer-events-none absolute inset-y-0 left-0 w-1/5 bg-gradient-to-r from-transparent via-white/35 to-transparent"
-                />
+            {safeJuzTotalAyahs >
+              0 &&
+              safeJuzPercentage >
+                0 && (
+                <div className="crc-shimmer pointer-events-none absolute inset-y-0 left-0 w-1/5 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
               )}
 
           </div>
 
 
-          {/* AYAH COUNT */}
+          {/* =================================================
+              JUZ AYAH COUNT
+          ================================================== */}
 
           <p className="mt-2 text-xs text-ink-faint">
-            {safeTotalAyahs > 0
-              ? `${safeAyahNumber} of ${safeTotalAyahs} Ayahs`
-              : `Ayah ${safeAyahNumber}`}
+
+            {safeJuzTotalAyahs >
+            0
+              ? `${safeCompletedAyahs} of ${safeJuzTotalAyahs} Ayahs`
+              : "Juz progress unavailable"}
+
           </p>
 
         </div>
 
 
         {/* =================================================
-            CONTINUE BUTTON
+            CONTINUE
         ================================================== */}
 
         <button
@@ -965,11 +1005,14 @@ function QuranReadingCard({
 export default function ContinueReadingCard({
   khatm,
   para,
+
   percentage = 0,
   completedAyahs = 0,
   totalAyahs = 0,
   progressLoading = false,
+
   quranReading = null,
+
   onStartReading,
 }) {
   return (
@@ -980,7 +1023,9 @@ export default function ContinueReadingCard({
       <KhatmProgressCard
         khatm={khatm}
         para={para}
-        percentage={percentage}
+        percentage={
+          percentage
+        }
         completedAyahs={
           completedAyahs
         }
