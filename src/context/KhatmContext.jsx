@@ -20,61 +20,93 @@ import {
 } from "../services/khatmApi";
 
 import {
+  getAllReadingProgress as getAllReadingProgressApi,
+  getQuranBookmarks as getQuranBookmarksApi,
+  saveQuranBookmark as saveQuranBookmarkApi,
   getReadingProgress as getReadingProgressApi,
   saveReadingProgress as saveReadingProgressApi,
+  deleteReadingProgress as deleteReadingProgressApi,
 } from "../services/readingProgressApi";
 
 const KhatmContext = createContext(null);
 
 export function KhatmProvider({ children }) {
-  const { user, token, isAuthenticated } = useAuth();
+  const {
+    user,
+    token,
+    isAuthenticated,
+  } = useAuth();
 
-  const [khatms, setKhatms] = useState([]);
-  const [members, setMembers] = useState([]);
-  const [activityLog, setActivityLog] = useState([]);
-  const [khatmLoading, setKhatmLoading] = useState(false);
+  const [khatms, setKhatms] =
+    useState([]);
 
-  const [readingProgress, setReadingProgress] = useState({});
+  const [members, setMembers] =
+    useState([]);
+
+  const [activityLog, setActivityLog] =
+    useState([]);
+
+  const [khatmLoading, setKhatmLoading] =
+    useState(false);
+
+  const [
+    readingProgress,
+    setReadingProgress,
+  ] = useState({});
 
   /*
+   * ========================================
    * LOAD KHATMS
+   * ========================================
    */
-  const loadKhatms = useCallback(async () => {
-    if (!token) {
-      setKhatms([]);
-      return [];
-    }
 
-    try {
-      setKhatmLoading(true);
+  const loadKhatms =
+    useCallback(async () => {
+      if (!token) {
+        setKhatms([]);
 
-      const result = await getMyKhatms(token);
+        return [];
+      }
 
-      const loadedKhatms =
-        result.data || [];
+      try {
+        setKhatmLoading(true);
 
-      setKhatms(loadedKhatms);
+        const result =
+          await getMyKhatms(token);
 
-      return loadedKhatms;
-    } catch (error) {
-      console.error(
-        "Failed to load Khatms:",
-        error.message,
-      );
+        const loadedKhatms =
+          result.data || [];
 
-      setKhatms([]);
+        setKhatms(
+          loadedKhatms,
+        );
 
-      return [];
-    } finally {
-      setKhatmLoading(false);
-    }
-  }, [token]);
+        return loadedKhatms;
+      } catch (error) {
+        console.error(
+          "Failed to load Khatms:",
+          error.message,
+        );
+
+        setKhatms([]);
+
+        return [];
+      } finally {
+        setKhatmLoading(false);
+      }
+    }, [token]);
 
   /*
+   * ========================================
    * LOAD KHATMS WHEN AUTH CHANGES
+   * ========================================
    */
+
   useEffect(() => {
-    if (isAuthenticated && token) {
+    if (
+      isAuthenticated &&
+      token
+    ) {
       loadKhatms();
     } else {
       setKhatms([]);
@@ -89,22 +121,30 @@ export function KhatmProvider({ children }) {
   ]);
 
   /*
+   * ========================================
    * GET KHATM FROM LOCAL STATE
+   * ========================================
    */
-  const getKhatm = useCallback(
-    (id) => {
-      return khatms.find(
-        (k) =>
-          String(k._id || k.id) ===
-          String(id),
-      );
-    },
-    [khatms],
-  );
+
+  const getKhatm =
+    useCallback(
+      (id) => {
+        return khatms.find(
+          (k) =>
+            String(
+              k._id || k.id,
+            ) === String(id),
+        );
+      },
+      [khatms],
+    );
 
   /*
+   * ========================================
    * GET KHATM BY INVITE CODE
+   * ========================================
    */
+
   const getKhatmFromInvite =
     useCallback(
       async (inviteCode) => {
@@ -126,109 +166,229 @@ export function KhatmProvider({ children }) {
     );
 
   /*
+   * ========================================
    * CREATE KHATM
+   * ========================================
    */
-  const createKhatm = useCallback(
-    async (data) => {
-      if (!token) {
-        throw new Error(
-          "You must be logged in.",
-        );
-      }
 
-      const result =
-        await createKhatmApi(
-          data,
-          token,
-        );
+  const createKhatm =
+    useCallback(
+      async (data) => {
+        if (!token) {
+          throw new Error(
+            "You must be logged in.",
+          );
+        }
 
-      await loadKhatms();
+        const result =
+          await createKhatmApi(
+            data,
+            token,
+          );
 
-      return result.data;
-    },
-    [
-      token,
-      loadKhatms,
-    ],
-  );
+        await loadKhatms();
+
+        return result.data;
+      },
+      [
+        token,
+        loadKhatms,
+      ],
+    );
 
   /*
+   * ========================================
    * JOIN KHATM
+   * ========================================
    */
-  const joinKhatm = useCallback(
-    async (khatmId) => {
-      if (!token) {
-        throw new Error(
-          "You must be logged in.",
-        );
-      }
 
-      const result =
-        await joinKhatmApi(
-          khatmId,
-          token,
-        );
+  const joinKhatm =
+    useCallback(
+      async (khatmId) => {
+        if (!token) {
+          throw new Error(
+            "You must be logged in.",
+          );
+        }
 
-      await loadKhatms();
+        const result =
+          await joinKhatmApi(
+            khatmId,
+            token,
+          );
 
-      return result.data;
-    },
-    [
-      token,
-      loadKhatms,
-    ],
-  );
+        await loadKhatms();
+
+        return result.data;
+      },
+      [
+        token,
+        loadKhatms,
+      ],
+    );
 
   /*
+   * ========================================
    * CLAIM PARA
+   * ========================================
    */
-  const claimPara = useCallback(
-    async (
-      khatmId,
-      paraNumber,
-    ) => {
-      if (!token) {
-        throw new Error(
-          "You must be logged in.",
-        );
-      }
 
-      const result =
-        await claimParaApi(
-          khatmId,
-          paraNumber,
-          token,
-        );
+  const claimPara =
+    useCallback(
+      async (
+        khatmId,
+        paraNumber,
+      ) => {
+        if (!token) {
+          throw new Error(
+            "You must be logged in.",
+          );
+        }
 
-      const freshKhatms =
-        await loadKhatms();
+        const result =
+          await claimParaApi(
+            khatmId,
+            paraNumber,
+            token,
+          );
 
-      const updatedKhatm =
-        freshKhatms.find(
-          (k) =>
-            String(
-              k._id || k.id,
-            ) ===
-            String(khatmId),
-        ) ||
-        result.data;
+        const freshKhatms =
+          await loadKhatms();
 
-      return updatedKhatm;
-    },
-    [
-      token,
-      loadKhatms,
-    ],
-  );
+        const updatedKhatm =
+          freshKhatms.find(
+            (k) =>
+              String(
+                k._id || k.id,
+              ) ===
+              String(khatmId),
+          ) ||
+          result.data;
+
+        return updatedKhatm;
+      },
+      [
+        token,
+        loadKhatms,
+      ],
+    );
 
   /*
+   * ========================================
    * COMPLETE PARA
+   * ========================================
    */
-  const completePara = useCallback(
-    async (
-      khatmId,
-      paraNumber,
-    ) => {
+
+  const completePara =
+    useCallback(
+      async (
+        khatmId,
+        paraNumber,
+      ) => {
+        if (!token) {
+          throw new Error(
+            "You must be logged in.",
+          );
+        }
+
+        const result =
+          await completeParaApi(
+            khatmId,
+            paraNumber,
+            token,
+          );
+
+        const freshKhatms =
+          await loadKhatms();
+
+        const updatedKhatm =
+          freshKhatms.find(
+            (k) =>
+              String(
+                k._id || k.id,
+              ) ===
+              String(khatmId),
+          ) ||
+          result.data;
+
+        return updatedKhatm;
+      },
+      [
+        token,
+        loadKhatms,
+      ],
+    );
+
+  /*
+   * ========================================
+   * LOAD MEMBERS
+   * ========================================
+   */
+
+  const loadMembers =
+    useCallback(
+      async (khatmId) => {
+        if (!token) {
+          return [];
+        }
+
+        const result =
+          await getMembers(
+            khatmId,
+            token,
+          );
+
+        const loadedMembers =
+          result.data || [];
+
+        setMembers(
+          loadedMembers,
+        );
+
+        return loadedMembers;
+      },
+      [token],
+    );
+
+  /*
+   * ========================================
+   * LOAD ACTIVITY
+   * ========================================
+   */
+
+  const loadActivity =
+    useCallback(
+      async (khatmId) => {
+        if (!token) {
+          return [];
+        }
+
+        const result =
+          await getActivity(
+            khatmId,
+            token,
+          );
+
+        const loadedActivity =
+          result.data || [];
+
+        setActivityLog(
+          loadedActivity,
+        );
+
+        return loadedActivity;
+      },
+      [token],
+    );
+
+  /*
+   * ========================================
+   * GET ALL SAVED READING LOCATIONS
+   * ========================================
+   */
+
+  const getAllReadingProgress =
+    useCallback(async () => {
       if (!token) {
         throw new Error(
           "You must be logged in.",
@@ -236,88 +396,67 @@ export function KhatmProvider({ children }) {
       }
 
       const result =
-        await completeParaApi(
-          khatmId,
-          paraNumber,
+        await getAllReadingProgressApi(
           token,
         );
 
-      const freshKhatms =
-        await loadKhatms();
-
-      const updatedKhatm =
-        freshKhatms.find(
-          (k) =>
-            String(
-              k._id || k.id,
-            ) ===
-            String(khatmId),
-        ) ||
-        result.data;
-
-      return updatedKhatm;
-    },
-    [
-      token,
-      loadKhatms,
-    ],
-  );
+      return result.data || [];
+    }, [token]);
 
   /*
-   * LOAD MEMBERS
+   * ========================================
+   * GET QURAN-ONLY BOOKMARKS
+   * ========================================
    */
-  const loadMembers = useCallback(
-    async (khatmId) => {
+
+  const getQuranBookmarks =
+    useCallback(async () => {
       if (!token) {
-        return [];
+        throw new Error(
+          "You must be logged in.",
+        );
       }
 
       const result =
-        await getMembers(
-          khatmId,
+        await getQuranBookmarksApi(
           token,
         );
 
-      const loadedMembers =
-        result.data || [];
-
-      setMembers(loadedMembers);
-
-      return loadedMembers;
-    },
-    [token],
-  );
+      return result.data || [];
+    }, [token]);
 
   /*
-   * LOAD ACTIVITY
+   * ========================================
+   * SAVE / UPDATE QURAN BOOKMARK
+   * ========================================
    */
-  const loadActivity = useCallback(
-    async (khatmId) => {
-      if (!token) {
-        return [];
-      }
 
-      const result =
-        await getActivity(
-          khatmId,
-          token,
-        );
+  const saveQuranBookmark =
+    useCallback(
+      async (data) => {
+        if (!token) {
+          throw new Error(
+            "You must be logged in.",
+          );
+        }
 
-      const loadedActivity =
-        result.data || [];
+        const result =
+          await saveQuranBookmarkApi(
+            data,
+            token,
+          );
 
-      setActivityLog(
-        loadedActivity,
-      );
-
-      return loadedActivity;
-    },
-    [token],
-  );
+        return result.data;
+      },
+      [token],
+    );
 
   /*
-   * GET SAVED READING PROGRESS
+   * ========================================
+   * GET SAVED KHATM READING PROGRESS
+   * ========================================
    */
+
   const getReadingProgress =
     useCallback(
       async (
@@ -356,8 +495,11 @@ export function KhatmProvider({ children }) {
     );
 
   /*
-   * SAVE READING PROGRESS
+   * ========================================
+   * SAVE / UPDATE KHATM READING PROGRESS
+   * ========================================
    */
+
   const saveReadingProgress =
     useCallback(
       async (
@@ -397,27 +539,110 @@ export function KhatmProvider({ children }) {
       [token],
     );
 
+  /*
+   * ========================================
+   * DELETE SAVED READING PROGRESS
+   * ========================================
+   */
+
+  const deleteReadingProgress =
+    useCallback(
+      async (progressId) => {
+        if (!token) {
+          throw new Error(
+            "You must be logged in.",
+          );
+        }
+
+        const result =
+          await deleteReadingProgressApi(
+            progressId,
+            token,
+          );
+
+        setReadingProgress(
+          (prev) => {
+            const updated = {
+              ...prev,
+            };
+
+            Object.keys(updated).forEach(
+              (key) => {
+                if (
+                  updated[key]?._id ===
+                  progressId
+                ) {
+                  delete updated[key];
+                }
+              },
+            );
+
+            return updated;
+          },
+        );
+
+        return result.data;
+      },
+      [token],
+    );
+
+  /*
+   * ========================================
+   * PROVIDER
+   * ========================================
+   */
+
   return (
     <KhatmContext.Provider
       value={{
         user,
+
         khatms,
+
         members,
+
         activityLog,
+
         khatmLoading,
 
         readingProgress,
+
+        /*
+         * Reading Progress
+         */
+
+        getAllReadingProgress,
+
+        getQuranBookmarks,
+
+        saveQuranBookmark,
+
         getReadingProgress,
+
         saveReadingProgress,
 
+        deleteReadingProgress,
+
+        /*
+         * Khatm
+         */
+
         loadKhatms,
+
         getKhatm,
+
         getKhatmFromInvite,
+
         createKhatm,
+
         joinKhatm,
+
         claimPara,
+
         completePara,
+
         loadMembers,
+
         loadActivity,
       }}
     >

@@ -3,7 +3,10 @@ import { useState, useEffect, useCallback } from "react";
 import { ChevronRight } from "lucide-react";
 import { useKhatms } from "../../context/KhatmContext";
 import { fetchJuz } from "../../services/quranApi";
-import { QuranLoading, QuranError } from "../../components/quran/QuranStateNotice";
+import {
+  QuranLoading,
+  QuranError,
+} from "../../components/quran/QuranStateNotice";
 import MushafFrame from "../../components/quran/MushafFrame";
 import TopBar from "../../components/common/TopBar";
 import Card from "../../components/common/Card";
@@ -16,7 +19,9 @@ export default function JuzDetail() {
   const juzNumber = Number(num);
 
   const activeKhatm = khatms.find((k) => k.status === "active");
-  const myPara = activeKhatm?.paras.find((p) => p.number === juzNumber && p.assignedToId === "u1");
+  const myPara = activeKhatm?.paras.find(
+    (p) => p.number === juzNumber && p.assignedToId === "u1",
+  );
 
   const [juz, setJuz] = useState(null);
   const [error, setError] = useState(null);
@@ -42,7 +47,9 @@ export default function JuzDetail() {
             <p className="text-xs font-semibold text-emerald-deep uppercase tracking-wide mb-1">
               Your Assigned Para
             </p>
-            <h3 className="font-display text-lg font-semibold text-ink mb-1">Para {num}</h3>
+            <h3 className="font-display text-lg font-semibold text-ink mb-1">
+              Para {num}
+            </h3>
             <p className="text-sm text-ink-soft mb-4">
               {myPara.status === "completed" ? "✓ Completed" : "In Progress"} ·{" "}
               {activeKhatm.dedicatedTo}
@@ -50,7 +57,9 @@ export default function JuzDetail() {
             <Button
               size="sm"
               className="w-full"
-              onClick={() => navigate(`/khatm/${activeKhatm.id}/para/${num}/read`)}
+              onClick={() =>
+                navigate(`/khatm/${activeKhatm.id}/para/${num}/read`)
+              }
             >
               Continue Reading
             </Button>
@@ -62,7 +71,10 @@ export default function JuzDetail() {
         ) : !juz ? (
           <QuranLoading label={`Loading Para ${juzNumber}...`} />
         ) : (
-          <MushafFrame label={`Juz ${juzNumber} \u00b7 Surahs`} className="!px-0 !pb-0 mb-4">
+          <MushafFrame
+            label={`Juz ${juzNumber} \u00b7 Surahs`}
+            className="!px-0 !pb-0 mb-4"
+          >
             <div className="divide-y divide-gold/15">
               {juz.surahGroups.map((g) => (
                 <button
@@ -75,12 +87,18 @@ export default function JuzDetail() {
                       {g.surahNumber}
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-ink text-[15px]">{g.surahName}</p>
-                      <p className="text-xs text-ink-soft">{g.ayahs.length} verses in this Para</p>
+                      <p className="font-semibold text-ink text-[15px]">
+                        {g.surahName}
+                      </p>
+                      <p className="text-xs text-ink-soft">
+                        {g.ayahs.length} verses in this Para
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <p className="font-arabic-indopak font-bold text-lg text-emerald-deep">{g.surahArabicName}</p>
+                    <p className="font-quran font-bold text-lg text-emerald-deep">
+                      {g.surahArabicName}
+                    </p>
                     <ChevronRight size={16} className="text-ink-faint" />
                   </div>
                 </button>
@@ -89,7 +107,11 @@ export default function JuzDetail() {
           </MushafFrame>
         )}
 
-        <Button variant="outline" className="w-full mt-2" onClick={() => navigate("/quran")}>
+        <Button
+          variant="outline"
+          className="w-full mt-2"
+          onClick={() => navigate("/quran")}
+        >
           Browse All Surahs
         </Button>
       </div>

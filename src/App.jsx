@@ -1,28 +1,53 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import { KhatmProvider } from "./context/KhatmContext";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+
+import {
+  AuthProvider,
+  useAuth,
+} from "./context/AuthContext";
+
+import {
+  KhatmProvider,
+} from "./context/KhatmContext";
 
 import AppLayout from "./layouts/AppLayout";
+
 import AuthLoadingScreen from "./components/common/AuthLoadingScreen";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import PublicRoute from "./components/auth/PublicRoute";
 
-// Onboarding
+/* =========================
+   ONBOARDING
+========================= */
+
 import Splash from "./pages/onboarding/Splash";
 import Onboarding from "./pages/onboarding/Onboarding";
 
-// Auth
+/* =========================
+   AUTH
+========================= */
+
 import Welcome from "./pages/auth/Welcome";
 import Signup from "./pages/auth/Signup";
 import Login from "./pages/auth/Login";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import VerifyEmail from "./pages/auth/VerifyEmail";
 
-// Home
+/* =========================
+   HOME
+========================= */
+
 import Home from "./pages/home/Home";
 
-// Khatm
+/* =========================
+   KHATM
+========================= */
+
 import MyKhatms from "./pages/khatm/MyKhatms";
 import CreateKhatm from "./pages/khatm/CreateKhatm";
 import KhatmDetails from "./pages/khatm/KhatmDetails";
@@ -36,12 +61,24 @@ import KhatmComplete from "./pages/khatm/KhatmComplete";
 import Dua from "./pages/khatm/Dua";
 import ParaReading from "./pages/khatm/ParaReading";
 
-// Quran
+/* =========================
+   QURAN
+========================= */
+
 import QuranHome from "./pages/quran/QuranHome";
-import JuzDetail from "./pages/quran/JuzDetail";
+import JuzReading from "./pages/quran/JuzReading";
 import SurahReading from "./pages/quran/SurahReading";
 
-// Profile
+/* =========================
+   SAVED
+========================= */
+
+import Saved from "./pages/saved/Saved";
+
+/* =========================
+   PROFILE
+========================= */
+
 import Profile from "./pages/profile/Profile";
 import Settings from "./pages/profile/Settings";
 
@@ -58,7 +95,9 @@ export default function App() {
 }
 
 function AppRoutes() {
-  const { authLoading } = useAuth();
+  const {
+    authLoading,
+  } = useAuth();
 
   if (authLoading) {
     return <AuthLoadingScreen />;
@@ -66,9 +105,15 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* ==================== PUBLIC ROUTES ==================== */}
 
-      <Route path="/" element={<Splash />} />
+      {/* ====================
+          PUBLIC ROUTES
+      ==================== */}
+
+      <Route
+        path="/"
+        element={<Splash />}
+      />
 
       <Route
         path="/onboarding"
@@ -90,9 +135,12 @@ function AppRoutes() {
         element={<JoinKhatm />}
       />
 
-      {/* ==================== AUTH ROUTES ==================== */}
+      {/* ====================
+          AUTH ROUTES
+      ==================== */}
 
       <Route element={<PublicRoute />}>
+
         <Route
           path="/signup"
           element={<Signup />}
@@ -107,13 +155,19 @@ function AppRoutes() {
           path="/login"
           element={<Login />}
         />
+
       </Route>
 
-      {/* ==================== PROTECTED ROUTES ==================== */}
+      {/* ====================
+          PROTECTED ROUTES
+      ==================== */}
 
       <Route element={<ProtectedRoute />}>
 
-        {/* Bottom navigation layout */}
+        {/* ====================
+            APP LAYOUT ROUTES
+        ==================== */}
+
         <Route element={<AppLayout />}>
 
           <Route
@@ -132,13 +186,20 @@ function AppRoutes() {
           />
 
           <Route
+            path="/saved"
+            element={<Saved />}
+          />
+
+          <Route
             path="/profile"
             element={<Profile />}
           />
 
         </Route>
 
-        {/* ==================== KHATM ROUTES ==================== */}
+        {/* ====================
+            KHATM ROUTES
+        ==================== */}
 
         <Route
           path="/khatms/create"
@@ -190,19 +251,27 @@ function AppRoutes() {
           element={<ParaReading />}
         />
 
-        {/* ==================== QURAN ROUTES ==================== */}
+        {/* ====================
+            QURAN ROUTES
+        ==================== */}
+
+        {/* SURAH READING */}
 
         <Route
           path="/quran/surah/:id"
           element={<SurahReading />}
         />
 
+        {/* JUZ / PARA READING */}
+
         <Route
-          path="/quran/juz/:num"
-          element={<JuzDetail />}
+          path="/quran/juz/:num/read"
+          element={<JuzReading />}
         />
 
-        {/* ==================== SETTINGS ==================== */}
+        {/* ====================
+            SETTINGS
+        ==================== */}
 
         <Route
           path="/settings"
@@ -211,11 +280,18 @@ function AppRoutes() {
 
       </Route>
 
-      {/* ==================== FALLBACK ==================== */}
+      {/* ====================
+          FALLBACK
+      ==================== */}
 
       <Route
         path="*"
-        element={<Navigate to="/" replace />}
+        element={
+          <Navigate
+            to="/"
+            replace
+          />
+        }
       />
 
     </Routes>

@@ -1,16 +1,35 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react";
+import {
+  useParams,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 
 import {
   Bookmark,
   ChevronLeft,
   ChevronRight,
-  ChevronLeft as Back,
   Volume2,
+  Loader2,
 } from "lucide-react";
 
-import { fetchSurah } from "../../services/quranApi";
-import { useAyahAudio } from "../../hooks/useAyahAudio";
+import {
+  fetchSurah,
+} from "../../services/quranApi";
+
+import {
+  useAyahAudio,
+} from "../../hooks/useAyahAudio";
+
+import {
+  useKhatms,
+} from "../../context/KhatmContext";
 
 import {
   QuranLoading,
@@ -18,507 +37,1348 @@ import {
 } from "../../components/quran/QuranStateNotice";
 
 import MushafFrame from "../../components/quran/MushafFrame";
+
 import Sheet from "../../components/common/Sheet";
+
 import Button from "../../components/common/Button";
+
+import SurahHeader from "../../components/quran/SurahHeader";
 
 const TOTAL_SURAHS = 114;
 
-const BISMILLAH = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
+const BISMILLAH =
+  "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
+
+
+/* =========================================================
+   REMOVE BISMILLAH FROM FIRST AYAH
+========================================================= */
+
+function removeBismillah(text = "") {
+  return text
+    .replace(
+      /^(?:بِسْمِ|بِسْمِ)\s+(?:ٱ|ا)?للَّ?هِ\s+(?:ٱ|ا)?لرَّحْمَٰنِ\s+(?:ٱ|ا)?لرَّحِيمِ[\s\uFEFF]*/,
+      "",
+    )
+    .trim();
+}
+
+
+/* =========================================================
+   ARABIC AYAH NUMBER
+========================================================= */
 
 function toArabicNumber(number) {
   return String(number)
     .split("")
-    .map((digit) => "٠١٢٣٤٥٦٧٨٩"[digit])
+    .map(
+      (digit) =>
+        "٠١٢٣٤٥٦٧٨٩"[digit],
+    )
     .join("");
 }
+
+
+/* =========================================================
+   SURAH READING
+========================================================= */
 
 export default function SurahReading() {
   const { id } = useParams();
 
   const navigate = useNavigate();
 
+  const location = useLocation();
+
   const surahNumber = Number(id);
 
-  const [surah, setSurah] = useState(null);
 
-  const [error, setError] = useState(null);
+  /* =========================================================
+     SAVED PAGE NAVIGATION STATE
+  ========================================================= */
 
-  const [tab, setTab] = useState("quran");
+  const navigationSavedAyah =
+    location.state?.savedAyah ||
+    null;
 
-  const [bookmarked, setBookmarked] = useState(false);
 
-  const [fontSize, setFontSize] = useState(23);
+  /* =========================================================
+     KHATM CONTEXT
+  ========================================================= */
 
-  const [selectedAyah, setSelectedAyah] = useState(null);
+  const {
+    getQuranBookmarks,
+    saveQuranBookmark,
+    deleteReadingProgress,
+  } = useKhatms();
 
-  const [savedAyah, setSavedAyah] = useState(null);
+
+  /* =========================================================
+     STATE
+  ========================================================= */
+
+  const [
+    surah,
+    setSurah,
+  ] = useState(null);
+
+  const [
+    error,
+    setError,
+  ] = useState(null);
+
+  const [
+    tab,
+    setTab,
+  ] = useState("quran");
+
+
+  /*
+   * Existing top-right bookmark.
+   * Kept unchanged.
+   */
+
+  const [
+    bookmarked,
+    setBookmarked,
+  ] = useState(false);
+
+
+  const [
+    fontSize,
+    setFontSize,
+  ] = useState(23);
+
+
+  const [
+    selectedAyah,
+    setSelectedAyah,
+  ] = useState(null);
+
+
+  /*
+   * Backend saved Quran bookmark
+   * for the current Surah.
+   */
+
+  const [
+    savedAyah,
+    setSavedAyah,
+  ] = useState(null);
+
+
+  const [
+    loadingBookmark,
+    setLoadingBookmark,
+  ] = useState(false);
+
+
+  const [
+    savingBookmark,
+    setSavingBookmark,
+  ] = useState(false);
+
+
+  const [
+    deletingBookmark,
+    setDeletingBookmark,
+  ] = useState(false);
+
+
+  /*
+   * ========================================
+   * AUTO SCROLL REF
+   * ========================================
+   */
+
+  const hasAutoScrolledRef =
+    useRef(false);
+
+
+  /* =========================================================
+     AUDIO
+  ========================================================= */
 
   const {
     playingAyah,
+    playingSurah,
     toggle: toggleAyahAudio,
+    toggleSurah,
     reset: resetAudio,
   } = useAyahAudio();
 
-  /*
-   * Load Surah
-   */
 
-  const load = useCallback(() => {
-    setError(null);
+  /* =========================================================
+     LOAD SURAH
+  ========================================================= */
 
-    setSurah(null);
+  const load =
+    useCallback(() => {
+      if (
+        !Number.isInteger(
+          surahNumber,
+        ) ||
+        surahNumber < 1 ||
+        surahNumber >
+          TOTAL_SURAHS
+      ) {
+        setSurah(null);
 
-    fetchSurah(surahNumber)
-      .then(setSurah)
-      .catch((e) => {
-        setError(e.message);
-      });
-  }, [surahNumber]);
+        setError(
+          "Invalid Surah number.",
+        );
+
+        return;
+      }
+
+      setError(null);
+
+      setSurah(null);
+
+      fetchSurah(
+        surahNumber,
+      )
+        .then(setSurah)
+        .catch((e) => {
+          setError(
+            e.message ||
+              "Failed to load Surah.",
+          );
+        });
+    }, [
+      surahNumber,
+    ]);
+
+
+  /* =========================================================
+     RESET WHEN SURAH CHANGES
+  ========================================================= */
 
   useEffect(() => {
-    load();
+    hasAutoScrolledRef.current =
+      false;
 
-    window.scrollTo(0, 0);
+    window.scrollTo(
+      0,
+      0,
+    );
 
     resetAudio();
+
+    setSelectedAyah(null);
+
+    setSavedAyah(null);
+
+    load();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
 
-  /*
-   * Load saved reading position
-   *
-   * Each Surah has its own saved Ayah.
-   */
+
+  /* =========================================================
+     LOAD QURAN BOOKMARK
+  ========================================================= */
 
   useEffect(() => {
-    const storageKey = `quran-reading-progress-surah-${surahNumber}`;
-
-    const saved = localStorage.getItem(storageKey);
-
-    if (!saved) {
-      setSavedAyah(null);
-
+    if (!surahNumber) {
       return;
     }
 
-    try {
-      const parsed = JSON.parse(saved);
+    let cancelled =
+      false;
 
-      setSavedAyah(parsed);
-    } catch (error) {
-      console.error("Failed to load reading progress:", error);
+    async function loadBookmark() {
+      try {
+        setLoadingBookmark(
+          true,
+        );
 
-      setSavedAyah(null);
+        const bookmarks =
+          await getQuranBookmarks();
+
+        if (cancelled) {
+          return;
+        }
+
+        const currentBookmark =
+          bookmarks.find(
+            (bookmark) =>
+              Number(
+                bookmark.surahNumber,
+              ) ===
+              surahNumber,
+          );
+
+        if (currentBookmark) {
+          setSavedAyah(
+            currentBookmark,
+          );
+
+          localStorage.removeItem(
+            `quran-reading-progress-surah-${surahNumber}`,
+          );
+
+          return;
+        }
+
+
+        /*
+         * ====================================
+         * LEGACY LOCALSTORAGE FALLBACK
+         * ====================================
+         */
+
+        const storageKey =
+          `quran-reading-progress-surah-${surahNumber}`;
+
+        const saved =
+          localStorage.getItem(
+            storageKey,
+          );
+
+        if (!saved) {
+          setSavedAyah(
+            null,
+          );
+
+          return;
+        }
+
+        try {
+          const parsed =
+            JSON.parse(
+              saved,
+            );
+
+          setSavedAyah(
+            parsed,
+          );
+        } catch (
+          storageError
+        ) {
+          console.error(
+            "Failed to load old reading progress:",
+            storageError,
+          );
+
+          setSavedAyah(
+            null,
+          );
+        }
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        console.error(
+          "Failed to load Quran bookmark:",
+          error.message,
+        );
+
+
+        /*
+         * Preserve old localStorage
+         * behavior if backend fails.
+         */
+
+        const storageKey =
+          `quran-reading-progress-surah-${surahNumber}`;
+
+        const saved =
+          localStorage.getItem(
+            storageKey,
+          );
+
+        if (!saved) {
+          setSavedAyah(
+            null,
+          );
+
+          return;
+        }
+
+        try {
+          const parsed =
+            JSON.parse(
+              saved,
+            );
+
+          setSavedAyah(
+            parsed,
+          );
+        } catch (
+          storageError
+        ) {
+          console.error(
+            "Failed to load local reading progress:",
+            storageError,
+          );
+
+          setSavedAyah(
+            null,
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingBookmark(
+            false,
+          );
+        }
+      }
     }
-  }, [surahNumber]);
 
-  /*
-   * Navigation
-   */
+    loadBookmark();
 
-  const goTo = (delta) => {
-    const target = surahNumber + delta;
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    surahNumber,
+    getQuranBookmarks,
+  ]);
 
-    if (target >= 1 && target <= TOTAL_SURAHS) {
-      navigate(`/quran/surah/${target}`);
-    }
-  };
 
-  /*
-   * Select Ayah
-   *
-   * Clicking anywhere on Quran text
-   * opens the Continue From Here option.
-   */
+  /* =========================================================
+     AUTO SCROLL TO SAVED AYAH
+  ========================================================= */
 
-  const handleAyahClick = (ayah) => {
-    setSelectedAyah({
-      number: ayah.number,
-
-      globalNumber: ayah.globalNumber,
-    });
-  };
-
-  /*
-   * Save reading position
-   */
-
-  const handleSetReadingProgress = () => {
-    if (!selectedAyah) {
+  useEffect(() => {
+    if (
+      !surah ||
+      loadingBookmark ||
+      tab !== "quran" ||
+      hasAutoScrolledRef.current
+    ) {
       return;
     }
 
-    const progress = {
-      surahNumber,
+    /*
+     * Priority:
+     *
+     * 1. Saved page navigation
+     * 2. Current Surah saved bookmark
+     */
 
-      ayahNumber: selectedAyah.number,
+    const ayahToScroll =
+      navigationSavedAyah ||
+      savedAyah;
 
-      globalAyahNumber: selectedAyah.globalNumber,
+    if (
+      !ayahToScroll?.ayahNumber
+    ) {
+      return;
+    }
 
-      savedAt: new Date().toISOString(),
+    const targetId =
+      `surah-ayah-${surahNumber}-${ayahToScroll.ayahNumber}`;
+
+    const timer =
+      window.setTimeout(() => {
+        const element =
+          document.getElementById(
+            targetId,
+          );
+
+        if (!element) {
+          console.warn(
+            "Saved Surah bookmark element not found:",
+            targetId,
+          );
+
+          return;
+        }
+
+        const headerOffset =
+          120;
+
+        const elementPosition =
+          element.getBoundingClientRect()
+            .top;
+
+        const offsetPosition =
+          elementPosition +
+          window.scrollY -
+          headerOffset;
+
+        window.scrollTo({
+          top: Math.max(
+            0,
+            offsetPosition,
+          ),
+          behavior:
+            "smooth",
+        });
+
+        hasAutoScrolledRef.current =
+          true;
+      }, 500);
+
+    return () => {
+      window.clearTimeout(
+        timer,
+      );
+    };
+  }, [
+    surah,
+    savedAyah,
+    navigationSavedAyah,
+    loadingBookmark,
+    tab,
+    surahNumber,
+  ]);
+
+
+  /* =========================================================
+     SURAH HEADER AUDIO
+  ========================================================= */
+
+  const handleSurahHeaderAudio =
+    () => {
+      if (!surah) {
+        return;
+      }
+
+      /*
+       * This page already has the
+       * COMPLETE Surah loaded.
+       *
+       * So the header plays the
+       * complete Surah directly.
+       */
+
+      const currentSurahNumber =
+        surah.number ??
+        surahNumber;
+
+      toggleSurah(
+        currentSurahNumber,
+        surah.ayahs,
+      );
     };
 
-    const storageKey = `quran-reading-progress-surah-${surahNumber}`;
 
-    localStorage.setItem(storageKey, JSON.stringify(progress));
+  /* =========================================================
+     BACK NAVIGATION
+  ========================================================= */
 
-    setSavedAyah(progress);
-
-    setSelectedAyah(null);
+  const handleBack = () => {
+    navigate(
+      "/quran",
+      {
+        state: {
+          activeTab:
+            "surah",
+        },
+      },
+    );
   };
 
-  /*
-   * Clear current reading position
-   */
 
-  const handleClearReadingProgress = () => {
-    const storageKey = `quran-reading-progress-surah-${surahNumber}`;
+  /* =========================================================
+     SURAH NAVIGATION
+  ========================================================= */
 
-    localStorage.removeItem(storageKey);
+  const goTo =
+    (delta) => {
+      const target =
+        surahNumber +
+        delta;
 
-    setSavedAyah(null);
+      if (
+        target >= 1 &&
+        target <=
+          TOTAL_SURAHS
+      ) {
+        navigate(
+          `/quran/surah/${target}`,
+        );
+      }
+    };
 
-    setSelectedAyah(null);
-  };
 
-  /*
-   * Surah information
-   */
+  /* =========================================================
+     SELECT AYAH
+  ========================================================= */
+
+  const handleAyahClick =
+    (ayah) => {
+      setSelectedAyah({
+        number:
+          ayah.number,
+
+        globalNumber:
+          ayah.globalNumber,
+      });
+    };
+
+
+  /* =========================================================
+     SAVE QURAN BOOKMARK
+  ========================================================= */
+
+  const handleSetReadingProgress =
+    async () => {
+      if (!selectedAyah) {
+        return;
+      }
+
+      try {
+        setSavingBookmark(
+          true,
+        );
+
+        const progress =
+          await saveQuranBookmark({
+            surahNumber,
+
+            ayahNumber:
+              selectedAyah.number,
+
+            globalAyahNumber:
+              selectedAyah.globalNumber,
+          });
+
+        setSavedAyah(
+          progress,
+        );
+
+        localStorage.removeItem(
+          `quran-reading-progress-surah-${surahNumber}`,
+        );
+
+        setSelectedAyah(
+          null,
+        );
+      } catch (error) {
+        console.error(
+          "Failed to save Quran bookmark:",
+          error.message,
+        );
+      } finally {
+        setSavingBookmark(
+          false,
+        );
+      }
+    };
+
+
+  /* =========================================================
+     DELETE QURAN BOOKMARK
+  ========================================================= */
+
+  const handleClearReadingProgress =
+    async () => {
+      /*
+       * Legacy localStorage bookmark.
+       */
+
+      if (!savedAyah?._id) {
+        const storageKey =
+          `quran-reading-progress-surah-${surahNumber}`;
+
+        localStorage.removeItem(
+          storageKey,
+        );
+
+        setSavedAyah(
+          null,
+        );
+
+        setSelectedAyah(
+          null,
+        );
+
+        return;
+      }
+
+      try {
+        setDeletingBookmark(
+          true,
+        );
+
+        await deleteReadingProgress(
+          savedAyah._id,
+        );
+
+        setSavedAyah(
+          null,
+        );
+
+        setSelectedAyah(
+          null,
+        );
+      } catch (error) {
+        console.error(
+          "Failed to delete Quran bookmark:",
+          error.message,
+        );
+      } finally {
+        setDeletingBookmark(
+          false,
+        );
+      }
+    };
+
+
+  /* =========================================================
+     SURAH INFORMATION
+  ========================================================= */
 
   const revelationArabic =
-    surah?.revelationType === "Meccan" ? "مَكِّيَّة" : "مَدَنِيَّة";
+    surah?.revelationType ===
+    "Meccan"
+      ? "مَكِّيَّة"
+      : "مَدَنِيَّة";
 
-  const shouldShowBismillah = surah && surah.number !== 1 && surah.number !== 9;
+
+  const shouldShowBismillah =
+    surah &&
+    surah.number !== 1 &&
+    surah.number !== 9;
+
+
+  const isThisSurahPlaying =
+    playingSurah ===
+    (
+      surah?.number ??
+      surahNumber
+    );
+
+
+  /* =========================================================
+     RENDER
+  ========================================================= */
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
+
       {/* =========================
           TOP HEADER
       ========================= */}
 
       <div className="sticky top-0 z-20 bg-cream/90 backdrop-blur px-5 pt-4 pb-2">
+
         <div className="flex items-center justify-between mb-4">
+
           {/* BACK */}
 
           <button
-            onClick={() => navigate(-1)}
+            onClick={
+              handleBack
+            }
             className="w-10 h-10 rounded-full bg-emerald-soft flex items-center justify-center"
           >
-            <Back size={20} className="text-emerald-deep" />
+            <ChevronLeft
+              size={20}
+              className="text-emerald-deep"
+            />
           </button>
+
 
           {/* TITLE */}
 
           <div className="text-center">
+
             <h1 className="font-display text-lg font-medium text-ink">
-              {surah?.name || `Surah ${surahNumber}`}
+              {
+                surah?.name ||
+                `Surah ${surahNumber}`
+              }
             </h1>
 
             <p className="text-xs text-ink-soft">
-              {surah ? `${surah.verses} Ayahs` : "\u00A0"}
+              {surah
+                ? `${surah.verses} Ayahs`
+                : "\u00A0"}
             </p>
+
           </div>
 
-          {/* BOOKMARK */}
+
+          {/* TOP RIGHT BOOKMARK */}
 
           <button
-            onClick={() => setBookmarked((b) => !b)}
+            onClick={() =>
+              setBookmarked(
+                (b) => !b,
+              )
+            }
             className="w-10 h-10 rounded-full bg-emerald-soft flex items-center justify-center"
           >
             <Bookmark
               size={18}
               className={
-                bookmarked ? "text-gold fill-gold" : "text-emerald-deep"
+                bookmarked
+                  ? "text-gold fill-gold"
+                  : "text-emerald-deep"
               }
             />
           </button>
+
         </div>
+
 
         {/* QURAN / TRANSLATION */}
 
         <div className="flex items-center gap-1.5 bg-emerald-soft/60 p-1 rounded-full mb-1">
-          {["quran", "translation"].map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex-1 text-[13px] font-semibold py-2 rounded-full capitalize transition-colors ${
-                tab === t
-                  ? "bg-emerald text-cream shadow-soft"
-                  : "text-emerald-deep/70"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
+
+          {[
+            "quran",
+            "translation",
+          ].map(
+            (t) => (
+              <button
+                key={t}
+                onClick={() =>
+                  setTab(t)
+                }
+                className={`flex-1 text-[13px] font-semibold py-2 rounded-full capitalize transition-colors ${
+                  tab === t
+                    ? "bg-emerald text-cream shadow-soft"
+                    : "text-emerald-deep/70"
+                }`}
+              >
+                {t}
+              </button>
+            ),
+          )}
+
         </div>
+
       </div>
+
 
       {/* =========================
           MAIN CONTENT
       ========================= */}
 
       <div className="flex-1 px-5 pt-3 pb-6">
+
         {error ? (
-          <QuranError onRetry={load} />
+          <QuranError
+            onRetry={load}
+          />
         ) : !surah ? (
-          <QuranLoading label={`Loading Surah ${surahNumber}...`} />
+          <QuranLoading
+            label={`Loading Surah ${surahNumber}...`}
+          />
         ) : tab === "quran" ? (
+
           <MushafFrame>
-            {/* =========================
-                SURAH HEADER
-            ========================= */}
 
-            <div className="relative border border-gold/60 rounded-[10px] bg-[#FFFDF8] px-4 pt-6 pb-4 mb-5">
-              {/* FLOATING SURAH PILL */}
+            {/* =============================================
+                REUSABLE SURAH HEADER
+            ============================================== */}
 
-              <div className="absolute left-1/2 -translate-x-1/2 -top-3 whitespace-nowrap bg-[#FFFDF8] border border-gold/50 rounded-full px-4 py-1">
-                <span className="text-[11px] font-bold text-emerald-deep">
-                  SURAH {surah.number}
-                </span>
+            <div className="mb-4">
+              <SurahHeader
+                number={
+                  surah.number
+                }
 
-                <span className="text-gold mx-1.5">·</span>
+                arabicName={
+                  surah.arabicName
+                }
 
-                <span className="font-arabic-indopak text-sm font-bold text-emerald-deep">
-                  {surah.arabicName}
-                </span>
-              </div>
+                revelationTypeArabic={
+                  revelationArabic
+                }
 
-              {/* SURAH INFORMATION */}
+                ayahCount={
+                  surah.verses
+                }
 
-              <div className="flex items-center justify-center gap-3 mt-1 text-[11px]">
-                <span className="font-arabic-indopak font-semibold text-emerald-deep">
-                  {revelationArabic}
-                </span>
+                rukuCount={
+                  surah.totalRukus
+                }
 
-                <span className="w-1 h-1 rounded-full bg-gold" />
+                revelationOrder={
+                  surah.revelationOrder
+                }
 
-                <span className="text-ink-soft">{surah.verses} Ayahs</span>
-              </div>
+                isPlaying={
+                  isThisSurahPlaying
+                }
 
-              {/* BISMILLAH */}
-
-              {shouldShowBismillah && (
-                <p className="font-arabic-indopak font-bold text-[24px] leading-relaxed text-center text-emerald-deep mt-3">
-                  {BISMILLAH}
-                </p>
-              )}
+                onClick={
+                  handleSurahHeaderAudio
+                }
+              />
             </div>
 
-            {/* =========================
+
+            {/* =============================================
+                BISMILLAH
+            ============================================== */}
+
+            {shouldShowBismillah && (
+              <p className="font-quran font-bold text-[24px] leading-relaxed text-center text-emerald-deep mb-5">
+                {BISMILLAH}
+              </p>
+            )}
+
+
+            {/* =============================================
                 CONTINUOUS AYAH FLOW
-            ========================= */}
+            ============================================== */}
 
             <div
               dir="rtl"
-              className="font-arabic-indopak font-bold text-[#141414]"
+              className="font-quran font-bold text-[#141414]"
               style={{
                 fontSize,
                 lineHeight: 2.5,
-                textAlign: "justify",
-                textAlignLast: "right",
+                textAlign:
+                  "justify",
+                textAlignLast:
+                  "right",
               }}
             >
-              {surah.ayahs.map((ayah) => {
-                const isSavedAyah =
-                  savedAyah &&
-                  Number(savedAyah.ayahNumber) === Number(ayah.number);
 
-                const isPlaying = playingAyah === ayah.globalNumber;
+              {surah.ayahs.map(
+                (ayah) => {
 
-                return (
-                  <span
-                    key={ayah.number}
-                    id={`surah-ayah-${surahNumber}-${ayah.number}`}
-                    className="inline"
-                  >
-                    {/* =========================
-                          AYAH TEXT
-                          
-                          Plain span is intentional.
-                          Do NOT use a button around
-                          the full Arabic text because
-                          it can break Quran line flow.
-                      ========================= */}
+                  const isSavedAyah =
+                    savedAyah &&
+                    Number(
+                      savedAyah.ayahNumber,
+                    ) ===
+                      Number(
+                        ayah.number,
+                      );
+
+
+                  const isPlaying =
+                    playingAyah ===
+                    ayah.globalNumber;
+
+
+                  const isFirstAyah =
+                    ayah.number === 1;
+
+
+                  const displayAyahText =
+                    shouldShowBismillah &&
+                    isFirstAyah
+                      ? removeBismillah(
+                          ayah.arabic,
+                        )
+                      : ayah.arabic;
+
+
+                  return (
                     <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleAyahClick(ayah)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
+                      key={
+                        ayah.number
+                      }
+                      id={`surah-ayah-${surahNumber}-${ayah.number}`}
+                      className="inline"
+                    >
 
-                          handleAyahClick(ayah);
-                        }
-                      }}
-                      className={`inline cursor-pointer rounded-md transition-colors ${
-                        isSavedAyah
-                          ? "bg-emerald-soft/80 text-emerald-deep"
-                          : "hover:bg-emerald-soft/40"
-                      }`}
-                      aria-label={`Set reading progress at ayah ${ayah.number}`}
-                    >
-                      {ayah.arabic}
-                    </span>
-                    {/* =========================
-                          SAVED BOOKMARK INDICATOR
-                          
-                          Small symbol only.
-                          No large text inside Quran.
-                      ========================= */}
-                    {isSavedAyah && (
+                      {/* AYAH TEXT */}
+
                       <span
-                        dir="ltr"
-                        className="inline-flex items-center justify-center align-middle mx-1"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() =>
+                          handleAyahClick(
+                            ayah,
+                          )
+                        }
+                        onKeyDown={(
+                          event,
+                        ) => {
+                          if (
+                            event.key ===
+                              "Enter" ||
+                            event.key ===
+                              " "
+                          ) {
+                            event.preventDefault();
+
+                            handleAyahClick(
+                              ayah,
+                            );
+                          }
+                        }}
+                        className={`inline cursor-pointer rounded-md transition-colors ${
+                          isSavedAyah
+                            ? "bg-emerald-soft/80 text-emerald-deep"
+                            : "hover:bg-emerald-soft/40"
+                        }`}
+                        aria-label={`Set reading progress at ayah ${ayah.number}`}
                       >
-                        <Bookmark size={14} className="text-gold fill-gold" />
+                        {
+                          displayAyahText
+                        }
                       </span>
-                    )}
-                    {/* =========================
-                          AYAH NUMBER / AUDIO BUTTON
-                      ========================= */}
-                    <button
-                      type="button"
-                      onClick={() => toggleAyahAudio(ayah.globalNumber)}
-                      className="inline-flex items-center justify-center align-middle mx-1 text-gold hover:opacity-70 transition-opacity"
-                      aria-label={`Play recitation for ayah ${ayah.number}`}
-                    >
-                      {isPlaying ? (
-                        <Volume2 size={16} className="text-gold" />
-                      ) : (
+
+
+                      {/* SAVED BOOKMARK */}
+
+                      {isSavedAyah && (
                         <span
-                          className="text-gold font-arabic-indopak"
-                          style={{
-                            fontSize: Math.max(fontSize - 7, 15),
-                          }}
+                          dir="ltr"
+                          className="inline-flex items-center justify-center align-middle mx-1"
                         >
-                          ﴿{toArabicNumber(ayah.number)}﴾
+                          <Bookmark
+                            size={14}
+                            className="text-gold fill-gold"
+                          />
                         </span>
                       )}
-                    </button>{" "}
-                  </span>
-                );
-              })}
+
+
+                      {/* AYAH AUDIO */}
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          toggleAyahAudio(
+                            ayah.globalNumber,
+                          )
+                        }
+                        className="inline-flex items-center justify-center align-middle mx-1 text-gold hover:opacity-70 transition-opacity"
+                        aria-label={`Play recitation for ayah ${ayah.number}`}
+                      >
+
+                        {isPlaying ? (
+                          <Volume2
+                            size={16}
+                            className="text-gold"
+                          />
+                        ) : (
+                          <span
+                            className="text-gold font-quran"
+                            style={{
+                              fontSize:
+                                Math.max(
+                                  fontSize -
+                                    7,
+                                  15,
+                                ),
+                            }}
+                          >
+                            ﴿
+                            {toArabicNumber(
+                              ayah.number,
+                            )}
+                            ﴾
+                          </span>
+                        )}
+
+                      </button>{" "}
+
+                    </span>
+                  );
+                },
+              )}
+
             </div>
+
           </MushafFrame>
+
         ) : (
+
           /* =========================
               TRANSLATION
           ========================= */
 
           <div className="space-y-5">
-            {surah.ayahs.map((ayah) => (
-              <div key={ayah.number} className="flex gap-3">
-                <span className="text-xs text-gold border border-gold/40 rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
-                  {ayah.number}
-                </span>
 
-                <p className="text-[15px] text-ink leading-relaxed">
-                  {ayah.translation}
-                </p>
-              </div>
-            ))}
+            {/* SAME SURAH HEADER */}
+
+            <SurahHeader
+              number={
+                surah.number
+              }
+
+              arabicName={
+                surah.arabicName
+              }
+
+              revelationTypeArabic={
+                revelationArabic
+              }
+
+              ayahCount={
+                surah.verses
+              }
+
+              rukuCount={
+                surah.totalRukus
+              }
+
+              revelationOrder={
+                surah.revelationOrder
+              }
+
+              isPlaying={
+                isThisSurahPlaying
+              }
+
+              onClick={
+                handleSurahHeaderAudio
+              }
+            />
+
+
+            <div className="space-y-5">
+              {surah.ayahs.map(
+                (ayah) => (
+                  <div
+                    key={
+                      ayah.number
+                    }
+                    className="flex gap-3"
+                  >
+
+                    <span className="text-xs text-gold border border-gold/40 rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
+                      {
+                        ayah.number
+                      }
+                    </span>
+
+                    <p className="text-[15px] text-ink leading-relaxed">
+                      {
+                        ayah.translation
+                      }
+                    </p>
+
+                  </div>
+                ),
+              )}
+            </div>
+
           </div>
         )}
+
 
         {/* =========================
             FONT SIZE
         ========================= */}
 
-        {surah && tab === "quran" && (
-          <div className="flex items-center justify-center gap-3 mt-6">
-            <span className="text-xs text-ink-faint">Font Size</span>
+        {surah &&
+          tab === "quran" && (
+            <div className="flex items-center justify-center gap-3 mt-6">
 
-            <button
-              onClick={() => setFontSize((f) => Math.max(18, f - 2))}
-              className="w-7 h-7 rounded-full bg-emerald-soft text-emerald-deep text-xs font-bold flex items-center justify-center"
-            >
-              A-
-            </button>
+              <span className="text-xs text-ink-faint">
+                Font Size
+              </span>
 
-            <button
-              onClick={() => setFontSize((f) => Math.min(34, f + 2))}
-              className="w-7 h-7 rounded-full bg-emerald-soft text-emerald-deep text-xs font-bold flex items-center justify-center"
-            >
-              A+
-            </button>
-          </div>
-        )}
+              <button
+                onClick={() =>
+                  setFontSize(
+                    (f) =>
+                      Math.max(
+                        18,
+                        f - 2,
+                      ),
+                  )
+                }
+                className="w-7 h-7 rounded-full bg-emerald-soft text-emerald-deep text-xs font-bold flex items-center justify-center"
+              >
+                A-
+              </button>
+
+              <button
+                onClick={() =>
+                  setFontSize(
+                    (f) =>
+                      Math.min(
+                        34,
+                        f + 2,
+                      ),
+                  )
+                }
+                className="w-7 h-7 rounded-full bg-emerald-soft text-emerald-deep text-xs font-bold flex items-center justify-center"
+              >
+                A+
+              </button>
+
+            </div>
+          )}
+
       </div>
+
 
       {/* =========================
           BOTTOM NAVIGATION
       ========================= */}
 
       <div className="sticky bottom-0 bg-cream/95 backdrop-blur border-t border-emerald-deep/8 px-5 py-4 flex items-center justify-between">
+
         <button
-          onClick={() => goTo(-1)}
-          disabled={surahNumber <= 1}
+          onClick={() =>
+            goTo(-1)
+          }
+          disabled={
+            surahNumber <= 1
+          }
           className="flex items-center gap-1 text-sm font-semibold text-emerald-deep disabled:opacity-30"
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft
+            size={16}
+          />
+
           Previous
         </button>
 
+
         <span className="text-xs text-ink-faint">
-          {surahNumber} / {TOTAL_SURAHS}
+          {surahNumber} /{" "}
+          {TOTAL_SURAHS}
         </span>
 
+
         <button
-          onClick={() => goTo(1)}
-          disabled={surahNumber >= TOTAL_SURAHS}
+          onClick={() =>
+            goTo(1)
+          }
+          disabled={
+            surahNumber >=
+            TOTAL_SURAHS
+          }
           className="flex items-center gap-1 text-sm font-semibold text-emerald-deep disabled:opacity-30"
         >
           Next
-          <ChevronRight size={16} />
+
+          <ChevronRight
+            size={16}
+          />
         </button>
+
       </div>
+
 
       {/* =========================
           CONTINUE FROM HERE SHEET
       ========================= */}
 
-      <Sheet open={Boolean(selectedAyah)} onClose={() => setSelectedAyah(null)}>
+      <Sheet
+        open={Boolean(
+          selectedAyah,
+        )}
+        onClose={() =>
+          !savingBookmark &&
+          !deletingBookmark &&
+          setSelectedAyah(
+            null,
+          )
+        }
+      >
+
         {selectedAyah && (
           <div className="text-center">
+
             <div className="w-12 h-12 rounded-full bg-emerald-soft flex items-center justify-center mx-auto mb-4">
-              <Bookmark size={21} className="text-gold" />
+
+              <Bookmark
+                size={21}
+                className="text-gold"
+              />
+
             </div>
 
+
             <h3 className="font-display text-xl font-semibold text-ink mb-1">
-              Ayah {selectedAyah.number}
+              Ayah{" "}
+              {selectedAyah.number}
             </h3>
 
+
             <p className="text-sm text-ink-soft mb-6">
-              Continue your Quran reading from this Ayah?
+              Continue your Quran
+              reading from this Ayah?
             </p>
 
+
             <div className="space-y-3">
-              <Button className="w-full" onClick={handleSetReadingProgress}>
-                ✓ Continue From Here
+
+              <Button
+                className="w-full"
+                onClick={
+                  handleSetReadingProgress
+                }
+                disabled={
+                  savingBookmark ||
+                  deletingBookmark
+                }
+              >
+
+                {savingBookmark ? (
+                  <span className="flex items-center justify-center gap-2">
+
+                    <Loader2
+                      size={16}
+                      className="animate-spin"
+                    />
+
+                    Saving...
+
+                  </span>
+                ) : (
+                  "✓ Continue From Here"
+                )}
+
               </Button>
+
 
               {savedAyah && (
                 <Button
                   variant="ghost"
                   className="w-full text-red-500"
-                  onClick={handleClearReadingProgress}
+                  onClick={
+                    handleClearReadingProgress
+                  }
+                  disabled={
+                    savingBookmark ||
+                    deletingBookmark
+                  }
                 >
-                  Remove Saved Position
+
+                  {deletingBookmark ? (
+                    <span className="flex items-center justify-center gap-2">
+
+                      <Loader2
+                        size={16}
+                        className="animate-spin"
+                      />
+
+                      Removing...
+
+                    </span>
+                  ) : (
+                    "Remove Saved Position"
+                  )}
+
                 </Button>
               )}
+
 
               <Button
                 variant="ghost"
                 className="w-full"
-                onClick={() => setSelectedAyah(null)}
+                onClick={() =>
+                  setSelectedAyah(
+                    null,
+                  )
+                }
+                disabled={
+                  savingBookmark ||
+                  deletingBookmark
+                }
               >
                 Cancel
               </Button>
+
             </div>
+
           </div>
         )}
+
       </Sheet>
+
     </div>
   );
 }
