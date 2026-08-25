@@ -49,26 +49,6 @@ import SurahHeader from "../../components/quran/SurahHeader";
 const TOTAL_SURAHS = 114;
 
 
-const BISMILLAH =
-  "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
-
-
-/* =========================================================
-   REMOVE BISMILLAH FROM FIRST AYAH
-========================================================= */
-
-function removeBismillah(
-  text = "",
-) {
-  return text
-    .replace(
-      /^(?:بِسْمِ|بِسْمِ)\s+(?:ٱ|ا)?للَّ?هِ\s+(?:ٱ|ا)?لرَّحْمَٰنِ\s+(?:ٱ|ا)?لرَّحِيمِ[\s\uFEFF]*/,
-      "",
-    )
-    .trim();
-}
-
-
 /* =========================================================
    ARABIC AYAH NUMBER
 ========================================================= */
@@ -88,6 +68,12 @@ function toArabicNumber(
 
 /* =========================================================
    MOBILE SURAH HEADER
+
+   MOBILE:
+   < 640px
+
+   DESKTOP / TABLET:
+   >= 640px uses existing SurahHeader
 ========================================================= */
 
 function MobileSurahHeader({
@@ -521,10 +507,7 @@ export default function SurahReading() {
 
 
   /*
-   * Existing font size feature.
-   *
-   * Starts slightly smaller for comfortable
-   * mobile reading but A-/A+ still works.
+   * Existing font-size feature.
    */
 
   const [
@@ -648,16 +631,23 @@ export default function SurahReading() {
     resetAudio();
 
 
-    setSelectedAyah(null);
+    setSelectedAyah(
+      null,
+    );
 
-    setSavedAyah(null);
+
+    setSavedAyah(
+      null,
+    );
 
 
     load();
 
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [load]);
+  }, [
+    load,
+  ]);
 
 
   /* =========================================================
@@ -692,7 +682,9 @@ export default function SurahReading() {
 
         const currentBookmark =
           bookmarks.find(
-            (bookmark) =>
+            (
+              bookmark,
+            ) =>
               Number(
                 bookmark.surahNumber,
               ) ===
@@ -700,7 +692,9 @@ export default function SurahReading() {
           );
 
 
-        if (currentBookmark) {
+        if (
+          currentBookmark
+        ) {
           setSavedAyah(
             currentBookmark,
           );
@@ -1184,12 +1178,6 @@ export default function SurahReading() {
       : "مَدَنِيَّة";
 
 
-  const shouldShowBismillah =
-    surah &&
-    surah.number !== 1 &&
-    surah.number !== 9;
-
-
   const isThisSurahPlaying =
     playingSurah ===
     (
@@ -1214,8 +1202,6 @@ export default function SurahReading() {
 
       {/* =====================================================
           TOP HEADER
-          
-          UNCHANGED DESIGN
       ====================================================== */}
 
       <div
@@ -1356,8 +1342,6 @@ export default function SurahReading() {
 
         {/* =================================================
             QURAN / TRANSLATION
-
-            UNCHANGED DESIGN
         ================================================== */}
 
         <div
@@ -1431,7 +1415,9 @@ export default function SurahReading() {
 
         {error ? (
           <QuranError
-            onRetry={load}
+            onRetry={
+              load
+            }
           />
         ) : !surah ? (
           <QuranLoading
@@ -1447,13 +1433,7 @@ export default function SurahReading() {
 
             <div className="mb-4">
 
-              {/* =================================================
-                  DESKTOP / TABLET
-                  
-                  EXISTING CURRENT DESIGN
-                  
-                  >= 640px
-              ================================================== */}
+              {/* DESKTOP / TABLET */}
 
               <div className="hidden sm:block">
 
@@ -1494,13 +1474,7 @@ export default function SurahReading() {
               </div>
 
 
-              {/* =================================================
-                  MOBILE
-                  
-                  < 640px
-                  
-                  5 BOX DESIGN
-              ================================================== */}
+              {/* MOBILE */}
 
               <MobileSurahHeader
                 surah={
@@ -1524,33 +1498,14 @@ export default function SurahReading() {
 
 
             {/* =================================================
-                BISMILLAH
-            ================================================== */}
-
-            {shouldShowBismillah && (
-              <p
-                dir="rtl"
-                className="
-                  mb-5
-                  px-2
-                  text-center
-                  font-quran
-                  text-[20px]
-                  font-bold
-                  leading-relaxed
-                  text-emerald-deep
-                  sm:text-[24px]
-                "
-              >
-                {
-                  BISMILLAH
-                }
-              </p>
-            )}
-
-
-            {/* =================================================
                 CONTINUOUS AYAH FLOW
+
+                IMPORTANT:
+                No separate Bismillah is rendered here.
+
+                The Quran API's actual Ayah text is rendered
+                directly, so Bismillah appears only where it
+                actually belongs in the source data.
             ================================================== */}
 
             <div
@@ -1603,17 +1558,19 @@ export default function SurahReading() {
                     ayah.globalNumber;
 
 
-                  const isFirstAyah =
-                    ayah.number === 1;
-
+                  /*
+                   * IMPORTANT:
+                   *
+                   * Do NOT remove Bismillah here.
+                   *
+                   * The actual Quran Ayah text is already
+                   * supplied by the Quran data.
+                   *
+                   * This prevents the old duplicate rendering.
+                   */
 
                   const displayAyahText =
-                    shouldShowBismillah &&
-                    isFirstAyah
-                      ? removeBismillah(
-                          ayah.arabic,
-                        )
-                      : ayah.arabic;
+                    ayah.arabic;
 
 
                   return (
@@ -1647,6 +1604,7 @@ export default function SurahReading() {
                               " "
                           ) {
                             event.preventDefault();
+
 
                             handleAyahClick(
                               ayah,
@@ -1782,7 +1740,7 @@ export default function SurahReading() {
 
           <div className="space-y-5">
 
-            {/* DESKTOP/TABLET HEADER */}
+            {/* DESKTOP / TABLET HEADER */}
 
             <div className="hidden sm:block">
 
