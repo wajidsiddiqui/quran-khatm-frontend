@@ -8,7 +8,7 @@ export default function ParaProgressCard({ khatm, para }) {
   return (
     <div className="bg-cream-card rounded-xl2 p-5 border border-emerald-deep/6 shadow-card mb-6 animate-fade-up">
       <p className="text-xs font-semibold text-ink-soft uppercase tracking-wide mb-3.5">
-        Your Para
+        Your Juz
       </p>
 
       {para ? (
@@ -29,7 +29,7 @@ export default function ParaProgressCard({ khatm, para }) {
 
           <div className="flex-1 min-w-0">
             <h3 className="font-display text-[15px] font-semibold text-ink">
-              Para {para.number}
+              Juz {para.number}
             </h3>
 
             <p className="text-xs text-ink-soft mt-0.5">

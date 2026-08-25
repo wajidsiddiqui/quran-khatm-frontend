@@ -70,7 +70,7 @@ export default function ActivityItem({ item }) {
       <div className="flex-1">
         <p className="text-[14.5px] text-ink">
           <span className="font-semibold">{userName}</span> {actionText}
-          {para && <span className="font-semibold"> Para {para}</span>}
+          {para && <span className="font-semibold"> Juz {para}</span>}
         </p>
 
         <p className="text-xs text-ink-faint mt-0.5">

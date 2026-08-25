@@ -25,7 +25,7 @@ export default function ParaCard({ para, onClaim, onOpen }) {
 
         <div>
           <p className="font-semibold text-ink text-[15px]">
-            Para {para.number}
+            Juz {para.number}
           </p>
 
           {para.status === "available" ? (

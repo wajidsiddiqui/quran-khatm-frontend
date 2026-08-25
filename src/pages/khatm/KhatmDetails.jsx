@@ -130,7 +130,7 @@ export default function KhatmDetails() {
             <ParaRing
               paras={khatm.paras || []}
               size={168}
-              label="Paras Completed"
+              label="Juz Completed"
               light={false}
             />
           </div>
@@ -195,7 +195,7 @@ export default function KhatmDetails() {
                 </div>
 
                 <span className="font-semibold text-ink text-[15px]">
-                  View All 30 Paras
+                  View All 30 Juz
                 </span>
 
               </div>

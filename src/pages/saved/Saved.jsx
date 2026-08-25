@@ -32,17 +32,25 @@ export default function Saved() {
     deleteReadingProgress,
   } = useKhatms();
 
-  const [savedLocations, setSavedLocations] =
-    useState([]);
+  const [
+    savedLocations,
+    setSavedLocations,
+  ] = useState([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
 
-  const [error, setError] =
-    useState("");
+  const [
+    error,
+    setError,
+  ] = useState("");
 
-  const [deletingId, setDeletingId] =
-    useState(null);
+  const [
+    deletingId,
+    setDeletingId,
+  ] = useState(null);
 
   /*
    * ========================================
@@ -50,10 +58,10 @@ export default function Saved() {
    * ========================================
    *
    * Quran bookmarks created before the
-   * Para display feature do not contain
+   * Juz display feature do not contain
    * juzNumber in the backend.
    *
-   * We resolve their Para from:
+   * We resolve their Juz from:
    *
    * globalAyahNumber → fetchSurah() → juzNumber
    *
@@ -87,17 +95,18 @@ export default function Saved() {
               async (progress) => {
                 /*
                  * Khatm progress does not need
-                 * Para resolution.
+                 * Juz resolution.
                  */
 
                 if (
-                  progress.type !== "quran"
+                  progress.type !==
+                  "quran"
                 ) {
                   return progress;
                 }
 
                 /*
-                 * Keep an existing Para value
+                 * Keep an existing Juz value
                  * if one is already available.
                  */
 
@@ -128,7 +137,8 @@ export default function Saved() {
                    * primary identifier.
                    */
 
-                  let matchedAyah = null;
+                  let matchedAyah =
+                    null;
 
                   if (
                     progress.globalAyahNumber
@@ -149,7 +159,9 @@ export default function Saved() {
                    * Fallback to Surah Ayah number.
                    */
 
-                  if (!matchedAyah) {
+                  if (
+                    !matchedAyah
+                  ) {
                     matchedAyah =
                       surah.ayahs.find(
                         (ayah) =>
@@ -173,9 +185,11 @@ export default function Saved() {
                     juzNumber:
                       matchedAyah.juzNumber,
                   };
-                } catch (error) {
+                } catch (
+                  error
+                ) {
                   console.error(
-                    "Failed to resolve Quran bookmark Para:",
+                    "Failed to resolve Quran bookmark Juz:",
                     {
                       surahNumber:
                         progress.surahNumber,
@@ -204,7 +218,9 @@ export default function Saved() {
         setSavedLocations(
           enrichedLocations,
         );
-      } catch (error) {
+      } catch (
+        error
+      ) {
         if (cancelled) {
           return;
         }
@@ -240,7 +256,9 @@ export default function Saved() {
    * ========================================
    */
 
-  function handleContinue(progress) {
+  function handleContinue(
+    progress,
+  ) {
     /*
      * ====================================
      * NORMAL QURAN BOOKMARK
@@ -248,7 +266,8 @@ export default function Saved() {
      */
 
     if (
-      progress.type === "quran"
+      progress.type ===
+      "quran"
     ) {
       navigate(
         `/quran/surah/${progress.surahNumber}`,
@@ -332,7 +351,10 @@ export default function Saved() {
     progressId,
   ) {
     try {
-      setDeletingId(progressId);
+      setDeletingId(
+        progressId,
+      );
+
       setError("");
 
       await deleteReadingProgress(
@@ -340,14 +362,20 @@ export default function Saved() {
       );
 
       setSavedLocations(
-        (previousLocations) =>
+        (
+          previousLocations,
+        ) =>
           previousLocations.filter(
-            (progress) =>
+            (
+              progress,
+            ) =>
               progress._id !==
               progressId,
           ),
       );
-    } catch (error) {
+    } catch (
+      error
+    ) {
       console.error(
         "Failed to delete reading progress:",
         error,
@@ -358,7 +386,9 @@ export default function Saved() {
           "Failed to delete saved location.",
       );
     } finally {
-      setDeletingId(null);
+      setDeletingId(
+        null,
+      );
     }
   }
 
@@ -437,7 +467,8 @@ export default function Saved() {
    */
 
   if (
-    savedLocations.length === 0
+    savedLocations.length ===
+    0
   ) {
     return (
       <div className="min-h-screen bg-cream px-5 py-6">
@@ -480,13 +511,15 @@ export default function Saved() {
   const quranBookmarks =
     savedLocations.filter(
       (progress) =>
-        progress.type === "quran",
+        progress.type ===
+        "quran",
     );
 
   const khatmProgress =
     savedLocations.filter(
       (progress) =>
-        progress.type === "khatm",
+        progress.type ===
+        "khatm",
     );
 
   /*
@@ -505,7 +538,8 @@ export default function Saved() {
             QURAN BOOKMARKS
         ===================================== */}
 
-        {quranBookmarks.length > 0 && (
+        {quranBookmarks.length >
+          0 && (
           <section className="mb-8">
 
             <div className="flex items-center gap-2 mb-3">
@@ -520,7 +554,11 @@ export default function Saved() {
               </h2>
 
               <span className="text-xs text-ink-faint">
-                ({quranBookmarks.length})
+                (
+                {
+                  quranBookmarks.length
+                }
+                )
               </span>
 
             </div>
@@ -528,10 +566,16 @@ export default function Saved() {
             <div className="space-y-3">
 
               {quranBookmarks.map(
-                (progress) => (
+                (
+                  progress,
+                ) => (
                   <SavedLocationCard
-                    key={progress._id}
-                    progress={progress}
+                    key={
+                      progress._id
+                    }
+                    progress={
+                      progress
+                    }
                     type="quran"
                     isDeleting={
                       deletingId ===
@@ -559,7 +603,8 @@ export default function Saved() {
             KHATM READING PROGRESS
         ===================================== */}
 
-        {khatmProgress.length > 0 && (
+        {khatmProgress.length >
+          0 && (
           <section>
 
             <div className="flex items-center gap-2 mb-3">
@@ -574,7 +619,11 @@ export default function Saved() {
               </h2>
 
               <span className="text-xs text-ink-faint">
-                ({khatmProgress.length})
+                (
+                {
+                  khatmProgress.length
+                }
+                )
               </span>
 
             </div>
@@ -582,10 +631,16 @@ export default function Saved() {
             <div className="space-y-3">
 
               {khatmProgress.map(
-                (progress) => (
+                (
+                  progress,
+                ) => (
                   <SavedLocationCard
-                    key={progress._id}
-                    progress={progress}
+                    key={
+                      progress._id
+                    }
+                    progress={
+                      progress
+                    }
                     type="khatm"
                     isDeleting={
                       deletingId ===
@@ -614,6 +669,7 @@ export default function Saved() {
   );
 }
 
+
 /*
  * ========================================
  * PAGE HEADER
@@ -635,6 +691,7 @@ function PageHeader() {
     </div>
   );
 }
+
 
 /*
  * ========================================
@@ -671,16 +728,19 @@ function SavedLocationCard({
       : khatmTitle;
 
   /*
-   * PARA NUMBER
+   * JUZ NUMBER
    *
    * Quran:
    * resolved juzNumber / paraNumber
    *
    * Khatm:
    * stored paraNumber
+   *
+   * Internal data names remain
+   * unchanged for compatibility.
    */
 
-  const paraNumber =
+  const juzNumber =
     isQuranBookmark
       ? (
           progress.juzNumber ??
@@ -690,15 +750,19 @@ function SavedLocationCard({
 
   /*
    * LOCATION
+   *
+   * User-facing terminology is now Juz.
    */
 
   const locationText =
-    `Para ${
-      paraNumber ?? "—"
+    `Juz ${
+      juzNumber ?? "—"
     } · Surah ${
-      progress.surahNumber ?? "—"
+      progress.surahNumber ??
+      "—"
     } · Ayah ${
-      progress.ayahNumber ?? "—"
+      progress.ayahNumber ??
+      "—"
     }`;
 
   return (
@@ -710,8 +774,12 @@ function SavedLocationCard({
 
         <button
           type="button"
-          onClick={onContinue}
-          disabled={isDeleting}
+          onClick={
+            onContinue
+          }
+          disabled={
+            isDeleting
+          }
           className="flex flex-1 items-center gap-3 min-w-0 text-left disabled:opacity-60"
         >
 
@@ -749,8 +817,12 @@ function SavedLocationCard({
 
         <button
           type="button"
-          onClick={onDelete}
-          disabled={isDeleting}
+          onClick={
+            onDelete
+          }
+          disabled={
+            isDeleting
+          }
           className="w-10 h-10 rounded-xl flex items-center justify-center text-ink-faint hover:bg-red-50 hover:text-red-500 transition-colors shrink-0 disabled:opacity-60"
           aria-label="Delete saved location"
         >
@@ -770,8 +842,12 @@ function SavedLocationCard({
 
         <button
           type="button"
-          onClick={onContinue}
-          disabled={isDeleting}
+          onClick={
+            onContinue
+          }
+          disabled={
+            isDeleting
+          }
           className="w-8 h-10 flex items-center justify-center text-ink-faint shrink-0 disabled:opacity-60"
           aria-label="Continue reading"
         >

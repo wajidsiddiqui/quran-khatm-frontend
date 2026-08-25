@@ -145,7 +145,7 @@ export default function QuranHome() {
             value: "surah",
           },
           {
-            label: "Juz / Para",
+            label: "Juz",
             value: "juz",
           },
         ]}

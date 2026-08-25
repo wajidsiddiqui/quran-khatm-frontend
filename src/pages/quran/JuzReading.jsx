@@ -134,7 +134,7 @@ export default function JuzReading() {
     ) {
       setJuz(null);
 
-      setError("Invalid Para number.");
+      setError("Invalid Juz number.");
 
       return;
     }
@@ -148,7 +148,7 @@ export default function JuzReading() {
       .catch((e) => {
         setError(
           e.message ||
-            "Failed to load Para.",
+            "Failed to load Juz.",
         );
       });
   }, [juzNumber]);
@@ -538,7 +538,7 @@ export default function JuzReading() {
 
           <div className="text-center">
             <h1 className="font-display text-lg font-medium text-ink">
-              Para {juzNumber}
+              Juz {juzNumber}
             </h1>
 
             <p className="text-xs text-ink-soft">
@@ -607,7 +607,7 @@ export default function JuzReading() {
           />
         ) : !juz ? (
           <QuranLoading
-            label={`Loading Para ${juzNumber}...`}
+            label={`Loading Juz ${juzNumber}...`}
           />
         ) : tab === "quran" ? (
 
@@ -621,7 +621,7 @@ export default function JuzReading() {
 
               <div className="absolute left-1/2 -translate-x-1/2 -top-3 whitespace-nowrap bg-[#FFFDF8] border border-gold/50 rounded-full px-4 py-1">
                 <span className="text-[11px] font-bold text-emerald-deep">
-                  PARA {juzNumber}
+                  Juz {juzNumber}
                 </span>
               </div>
 

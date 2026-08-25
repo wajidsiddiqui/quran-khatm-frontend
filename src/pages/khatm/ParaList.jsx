@@ -57,7 +57,7 @@ export default function ParaList() {
 
       setClaimTarget(null);
     } catch (error) {
-      console.error("Failed to claim Para:", error);
+      console.error("Failed to claim Juz:", error);
     }
   };
 
@@ -65,7 +65,7 @@ export default function ParaList() {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <p className="text-sm text-ink-soft">
-          Loading Paras...
+          Loading Juz...
         </p>
       </div>
     );
@@ -81,7 +81,7 @@ export default function ParaList() {
 
   return (
     <div className="min-h-screen bg-cream">
-      <TopBar title="Para Division" />
+      <TopBar title="Juz Division" />
 
       <div className="px-5 pb-4">
         <Tabs
@@ -130,11 +130,11 @@ export default function ParaList() {
         {claimTarget && (
           <div className="text-center">
             <h3 className="font-display text-xl font-semibold text-ink mb-2">
-              Claim Para {claimTarget.number}?
+              Claim Juz {claimTarget.number}?
             </h3>
 
             <p className="text-sm text-ink-soft mb-6">
-              You will be responsible for completing this Para
+              You will be responsible for completing this Juz
               as part of this Khatm.
             </p>
 

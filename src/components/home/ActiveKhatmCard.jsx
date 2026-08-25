@@ -25,7 +25,7 @@ export default function ActiveKhatmCard({ khatm, progress }) {
 
       <div className="relative flex items-center justify-between">
         <div className="flex items-center gap-4 text-xs text-ink-soft">
-          <span className="font-medium text-ink">{progress.completed} / 30 Paras</span>
+          <span className="font-medium text-ink">{progress.completed} / 30 Juz</span>
           <span className="flex items-center gap-1">
             <Users size={13} /> {khatm.memberCount} Members
           </span>

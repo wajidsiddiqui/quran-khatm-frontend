@@ -73,7 +73,7 @@ export default function KhatmProgress() {
           <ParaRing
             paras={khatm.paras || []}
             size={190}
-            label="Paras Completed"
+            label="Juz Completed"
           />
         </div>
 

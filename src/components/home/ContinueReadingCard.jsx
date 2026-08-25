@@ -6,6 +6,8 @@ import {
 
 import Button from "../common/Button";
 
+import quranCalligraphyBg from "../../assets/quran-calligraphy-bg.jpg";
+
 
 /* =========================================================
    ANIMATION STYLES
@@ -144,6 +146,35 @@ function CardAnimationStyles() {
 
 
 /* =========================================================
+   QURAN CALLIGRAPHY BACKGROUND
+   Uses the uploaded image from src/assets.
+========================================================= */
+
+function QuranCalligraphyBackground({
+  opacity = 0.05,
+  overlayClassName = "",
+}) {
+  return (
+    <>
+      <img
+        src={quranCalligraphyBg}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center select-none"
+        style={{
+          opacity,
+        }}
+      />
+
+      <div
+        className={`pointer-events-none absolute inset-0 ${overlayClassName}`}
+      />
+    </>
+  );
+}
+
+
+/* =========================================================
    EIGHT POINT STAR
 ========================================================= */
 
@@ -177,34 +208,6 @@ function EightPointStar({
         />
       </g>
     </svg>
-  );
-}
-
-
-/* =========================================================
-   CLEAN SINGLE-LAYER CALLIGRAPHY
-========================================================= */
-
-function CalligraphyWatermark({
-  text,
-  className = "",
-  rotate = -7,
-}) {
-  return (
-    <div
-      aria-hidden="true"
-      className={`pointer-events-none absolute select-none ${className}`}
-      style={{
-        transform: `rotate(${rotate}deg)`,
-      }}
-    >
-      <span
-        dir="rtl"
-        className="whitespace-nowrap font-quran font-bold leading-none"
-      >
-        {text}
-      </span>
-    </div>
   );
 }
 
@@ -343,7 +346,8 @@ function MoonAndStars() {
               left: star.left,
               width: star.size,
               height: star.size,
-              animationDelay: star.delay,
+              animationDelay:
+                star.delay,
             }}
           />
         ),
@@ -370,57 +374,6 @@ function MosqueSkyline({
       <path
         d="M0 60 L0 40 L20 40 L20 30 L30 22 L40 30 L40 40 L60 40 L60 18 A12 12 0 0 1 84 18 L84 40 L100 40 L100 34 L110 34 L110 24 L115 18 L120 24 L120 34 L130 34 L130 40 L150 40 L150 12 A18 18 0 0 1 186 12 L186 40 L210 40 L210 30 L220 22 L230 30 L230 40 L250 40 L250 40 L260 40 L260 20 A14 14 0 0 1 288 20 L288 40 L310 40 L310 34 L320 34 L320 24 L325 18 L330 24 L330 34 L340 34 L340 40 L400 40 L400 60 Z"
         fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-
-/* =========================================================
-   ARABESQUE
-========================================================= */
-
-function ArabesquePattern({
-  className = "",
-}) {
-  const patternId =
-    "crc-home-arabesque";
-
-  return (
-    <svg
-      className={className}
-      aria-hidden="true"
-      preserveAspectRatio="xMidYMid slice"
-    >
-      <defs>
-        <pattern
-          id={patternId}
-          width="46"
-          height="46"
-          patternUnits="userSpaceOnUse"
-        >
-          <path
-            d="M23 2 L44 23 L23 44 L2 23 Z"
-            fill="none"
-            stroke="#0F5C46"
-            strokeWidth="0.6"
-          />
-
-          <circle
-            cx="23"
-            cy="23"
-            r="3.5"
-            fill="none"
-            stroke="#0F5C46"
-            strokeWidth="0.6"
-          />
-        </pattern>
-      </defs>
-
-      <rect
-        width="100%"
-        height="100%"
-        fill={`url(#${patternId})`}
       />
     </svg>
   );
@@ -513,13 +466,20 @@ function KhatmProgressCard({
       ),
     );
 
+
+  /* =======================================================
+     EMPTY KHATM STATE
+  ======================================================= */
+
   if (!hasPara) {
     return (
       <div className="crc-fade-up relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-deep via-emerald-800 to-emerald-900 px-6 py-7 shadow-card sm:px-8 sm:py-8">
 
-        <CalligraphyWatermark
-          text="القرآن الكريم"
-          className="-right-8 -top-1 text-[92px] text-white/[0.045] sm:text-[110px]"
+        {/* IMAGE BACKGROUND */}
+
+        <QuranCalligraphyBackground
+          opacity={0.075}
+          overlayClassName="bg-emerald-deep/25"
         />
 
         <MoonAndStars />
@@ -565,12 +525,19 @@ function KhatmProgressCard({
     );
   }
 
+
+  /* =======================================================
+     ACTIVE KHATM
+  ======================================================= */
+
   return (
     <div className="crc-fade-up group relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-deep via-emerald-800 to-emerald-900 px-6 py-7 shadow-card transition-all duration-500 hover:-translate-y-0.5 hover:shadow-2xl sm:px-8 sm:py-8">
 
-      <CalligraphyWatermark
-        text="وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا"
-        className="-right-16 top-4 text-[55px] text-white/[0.04] sm:-right-8 sm:text-[68px]"
+      {/* IMAGE BACKGROUND */}
+
+      <QuranCalligraphyBackground
+        opacity={0.06}
+        overlayClassName="bg-emerald-deep/25"
       />
 
       <MoonAndStars />
@@ -719,6 +686,10 @@ function QuranReadingCard({
     "crc-fade-up group relative overflow-hidden rounded-3xl border border-emerald-deep/10 bg-gradient-to-b from-white via-[#FFFDF8] to-[#F6F2E8] px-6 py-6 shadow-soft transition-all duration-500 hover:-translate-y-0.5 hover:shadow-xl sm:px-7";
 
 
+  /* =======================================================
+     EMPTY QURAN STATE
+  ======================================================= */
+
   if (!quranReading) {
     return (
       <div
@@ -729,14 +700,15 @@ function QuranReadingCard({
         }}
       >
 
-        <CalligraphyWatermark
-          text="اقْرَأْ"
-          className="-right-2 -top-2 text-[88px] text-emerald-deep/[0.035]"
-          rotate={-5}
+        {/* IMAGE BACKGROUND */}
+
+        <QuranCalligraphyBackground
+          opacity={0.07}
+          overlayClassName="bg-[#FFFDF8]/35"
         />
 
-        <ArabesquePattern
-          className="pointer-events-none absolute inset-0 opacity-[0.025]"
+        <EightPointStar
+          className="pointer-events-none absolute -bottom-3 -right-3 h-16 w-16 text-emerald-deep/[0.035]"
         />
 
         <div className="relative z-10">
@@ -757,7 +729,9 @@ function QuranReadingCard({
 
           <button
             type="button"
-            onClick={onStartReading}
+            onClick={
+              onStartReading
+            }
             className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-soft px-4 py-2 text-sm font-semibold text-emerald-deep transition-all hover:bg-emerald-soft/70 hover:gap-3 active:scale-[0.98]"
           >
             Start Reading Quran
@@ -790,6 +764,7 @@ function QuranReadingCard({
   const safeJuzNumber =
     Number(juzNumber) || 0;
 
+
   const safeCompletedAyahs =
     Math.max(
       0,
@@ -798,6 +773,7 @@ function QuranReadingCard({
       ) || 0,
     );
 
+
   const safeJuzTotalAyahs =
     Math.max(
       0,
@@ -805,6 +781,7 @@ function QuranReadingCard({
         juzTotalAyahs,
       ) || 0,
     );
+
 
   const safeJuzPercentage =
     safeJuzTotalAyahs > 0
@@ -834,18 +811,11 @@ function QuranReadingCard({
       }}
     >
 
-      {/* =================================================
-          CLEAN SINGLE CALLIGRAPHY
-      ================================================== */}
+      {/* IMAGE BACKGROUND */}
 
-      <CalligraphyWatermark
-        text="وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا"
-        className="-right-14 -top-1 text-[44px] text-emerald-deep/[0.035] sm:-right-6 sm:text-[54px]"
-        rotate={-5}
-      />
-
-      <ArabesquePattern
-        className="pointer-events-none absolute inset-0 opacity-[0.025]"
+      <QuranCalligraphyBackground
+        opacity={0.075}
+        overlayClassName="bg-[#FFFDF8]/40"
       />
 
       <EightPointStar
@@ -909,7 +879,6 @@ function QuranReadingCard({
 
         {/* =================================================
             JUZ PROGRESS
-            SAME STRUCTURE AS KHATM
         ================================================== */}
 
         <div className="mt-6">
@@ -931,10 +900,6 @@ function QuranReadingCard({
 
           </div>
 
-
-          {/* =================================================
-              PROGRESS BAR
-          ================================================== */}
 
           <div className="relative mt-2 h-2.5 w-full overflow-hidden rounded-full bg-emerald-deep/10">
 
@@ -959,10 +924,6 @@ function QuranReadingCard({
           </div>
 
 
-          {/* =================================================
-              JUZ AYAH COUNT
-          ================================================== */}
-
           <p className="mt-2 text-xs text-ink-faint">
 
             {safeJuzTotalAyahs >
@@ -981,7 +942,9 @@ function QuranReadingCard({
 
         <button
           type="button"
-          onClick={onContinue}
+          onClick={
+            onContinue
+          }
           className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-soft px-4 py-2 text-sm font-semibold text-emerald-deep transition-all hover:bg-emerald-soft/70 hover:gap-3 active:scale-[0.98]"
         >
           Continue Quran Reading

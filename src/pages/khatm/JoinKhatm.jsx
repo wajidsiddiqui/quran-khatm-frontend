@@ -143,7 +143,7 @@ export default function JoinKhatm() {
         <ParaRing
           paras={khatm.paras || []}
           size={160}
-          label="Paras Completed"
+          label="Juz Completed"
         />
 
         <div className="flex items-center gap-6 mt-6 text-sm">
