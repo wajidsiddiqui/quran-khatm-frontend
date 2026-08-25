@@ -114,9 +114,7 @@ function compareQuranPosition(
 
 /* =========================================================
    FIND APPLICATION JUZ FOR A SAVED QURAN POSITION
-
-   Uses the application's fixed boundaries from quranApi.js.
-   ========================================================= */
+========================================================= */
 
 function findJuzForPosition(
   position,
@@ -228,6 +226,9 @@ export default function Home() {
 
   /* =========================================================
      ACTIVE KHATM
+     
+     Only an active Khatm is shown here.
+     Completed Khatms go to My Khatms > Completed.
   ========================================================= */
 
   const activeKhatm =
@@ -248,6 +249,44 @@ export default function Home() {
         user?.id ||
         "",
     );
+
+
+  /* =========================================================
+     CREATOR CHECK
+     
+     IMPORTANT:
+     This is calculated in Home from the exact Khatm object
+     and exact authenticated user, then passed explicitly
+     to ActiveKhatmCard.
+  ========================================================= */
+
+  const isActiveKhatmCreator =
+    (() => {
+      if (
+        !activeKhatm?.createdBy ||
+        !userId
+      ) {
+        return false;
+      }
+
+      const creatorId =
+        typeof activeKhatm.createdBy ===
+        "object"
+          ? activeKhatm.createdBy?._id ||
+            activeKhatm.createdBy?.id
+          : activeKhatm.createdBy;
+
+      if (!creatorId) {
+        return false;
+      }
+
+      return (
+        String(
+          creatorId,
+        ) ===
+        userId
+      );
+    })();
 
 
   /* =========================================================
@@ -312,8 +351,6 @@ export default function Home() {
 
   /* =========================================================
      EXISTING KHATM-LEVEL PROGRESS
-
-     KEEPING THIS LOGIC UNCHANGED.
   ========================================================= */
 
   const progress =
@@ -326,8 +363,6 @@ export default function Home() {
 
   /* =========================================================
      LOAD SAVED KHATM READING PROGRESS
-
-     Existing behavior preserved.
   ========================================================= */
 
   useEffect(() => {
@@ -424,8 +459,6 @@ export default function Home() {
 
   /* =========================================================
      LOAD PERSONAL QURAN BOOKMARK
-
-     Bookmark gives us the exact saved Surah + Ayah.
   ========================================================= */
 
   useEffect(() => {
@@ -457,10 +490,6 @@ export default function Home() {
           latestBookmark,
         );
 
-        /*
-         * No saved Quran position.
-         */
-
         if (
           !latestBookmark?.surahNumber
         ) {
@@ -474,11 +503,6 @@ export default function Home() {
 
           return;
         }
-
-        /*
-         * Fetch complete Surah data.
-         * Used for display name + exact metadata.
-         */
 
         const surahData =
           await fetchSurah(
@@ -537,12 +561,6 @@ export default function Home() {
 
   /* =========================================================
      CALCULATE PERSONAL QURAN JUZ PROGRESS
-
-     IMPORTANT:
-     This is NOT Khatm progress.
-
-     It is the user's personal Quran position projected
-     onto the application's fixed Juz boundaries.
   ========================================================= */
 
   useEffect(() => {
@@ -573,12 +591,6 @@ export default function Home() {
             latestQuranBookmark.ayahNumber,
         };
 
-        /*
-         * Find which of our application's
-         * fixed Juz boundaries contains
-         * this saved Ayah.
-         */
-
         const juzNumber =
           findJuzForPosition(
             savedPosition,
@@ -591,10 +603,6 @@ export default function Home() {
 
           return;
         }
-
-        /*
-         * Fetch the exact custom Juz.
-         */
 
         const juzData =
           await fetchJuz(
@@ -615,10 +623,7 @@ export default function Home() {
           -1;
 
 
-        /* ===================================================
-           PRIMARY MATCH
-           Use global Quran Ayah number.
-        =================================================== */
+        /* PRIMARY MATCH */
 
         if (
           latestQuranBookmark.globalAyahNumber
@@ -636,10 +641,7 @@ export default function Home() {
         }
 
 
-        /* ===================================================
-           FALLBACK MATCH
-           Use Surah + Ayah.
-        =================================================== */
+        /* FALLBACK MATCH */
 
         if (
           savedIndex < 0
@@ -690,9 +692,7 @@ export default function Home() {
         }
 
 
-        /* ===================================================
-           TOTAL JUZ AYAHS
-        =================================================== */
+        /* TOTAL JUZ AYAHS */
 
         const totalAyahsInJuz =
           Number(
@@ -702,12 +702,7 @@ export default function Home() {
           0;
 
 
-        /* ===================================================
-           COMPLETED AYAH COUNT
-
-           The saved Ayah itself is treated as
-           the current/read position.
-        =================================================== */
+        /* COMPLETED AYAH COUNT */
 
         const completedAyahsInJuz =
           savedIndex >= 0
@@ -715,9 +710,7 @@ export default function Home() {
             : 0;
 
 
-        /* ===================================================
-           PERCENTAGE
-        =================================================== */
+        /* PERCENTAGE */
 
         const juzPercentage =
           totalAyahsInJuz > 0
@@ -778,8 +771,6 @@ export default function Home() {
 
   /* =========================================================
      CONTINUE KHATM READING
-
-     Existing route preserved.
   ========================================================= */
 
   const handleContinueKhatm =
@@ -803,8 +794,6 @@ export default function Home() {
 
   /* =========================================================
      CONTINUE PERSONAL QURAN READING
-
-     Exact saved Surah + Ayah is preserved.
   ========================================================= */
 
   const handleContinueQuran =
@@ -879,8 +868,6 @@ export default function Home() {
 
   /* =========================================================
      QURAN READING CARD DATA
-
-     Progress is now JUZ BASED.
   ========================================================= */
 
   const homeQuranReading =
@@ -888,16 +875,8 @@ export default function Home() {
     latestQuranSurah &&
     latestQuranJuz
       ? {
-          /*
-           * MAIN CARD UNIT
-           */
-
           juzNumber:
             latestQuranJuz.juzNumber,
-
-          /*
-           * JUZ PROGRESS
-           */
 
           juzCompletedAyahs:
             latestQuranJuz.completedAyahs,
@@ -908,21 +887,12 @@ export default function Home() {
           juzPercentage:
             latestQuranJuz.percentage,
 
-          /*
-           * EXACT SAVED POSITION
-           * Still shown inside the card.
-           */
-
           surahName:
             latestQuranSurah.name ||
             `Surah ${latestQuranBookmark.surahNumber}`,
 
           ayahNumber:
             latestQuranBookmark.ayahNumber,
-
-          /*
-           * EXACT RESUME
-           */
 
           onContinue:
             handleContinueQuran,
@@ -932,7 +902,6 @@ export default function Home() {
 
   /* =========================================================
      QUICK ACTIONS
-     EXISTING LOGIC UNCHANGED.
   ========================================================= */
 
   const quickActions = [
@@ -1001,10 +970,6 @@ export default function Home() {
   return (
     <div className="px-5 pt-14 pb-4">
 
-      {/* =====================================================
-          HOME HEADER
-      ====================================================== */}
-
       <HomeHeader
         name={
           user?.name?.split(
@@ -1065,7 +1030,6 @@ export default function Home() {
 
       {/* =====================================================
           QUICK ACCESS
-          EXISTING SECTION UNCHANGED.
       ====================================================== */}
 
       <p className="mt-6 mb-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">
@@ -1090,8 +1054,9 @@ export default function Home() {
 
 
       {/* =====================================================
-          EXISTING ACTIVE KHATM CARD
-          NOT REMOVED.
+          ACTIVE KHATM CARD
+          
+          Creator information is explicitly passed.
       ====================================================== */}
 
       {activeKhatm &&
@@ -1100,16 +1065,20 @@ export default function Home() {
             khatm={
               activeKhatm
             }
+
             progress={
               progress
+            }
+
+            isCreator={
+              isActiveKhatmCreator
             }
           />
         )}
 
 
       {/* =====================================================
-          EXISTING PARA PROGRESS CARD
-          NOT REMOVED.
+          PARA PROGRESS CARD
       ====================================================== */}
 
       {activeKhatm && (
@@ -1117,9 +1086,11 @@ export default function Home() {
           khatm={
             activeKhatm
           }
+
           para={
             myPara
           }
+
           paras={
             myParas
           }
@@ -1128,8 +1099,7 @@ export default function Home() {
 
 
       {/* =====================================================
-          EXISTING ACTIVITY PREVIEW
-          NOT REMOVED.
+          ACTIVITY PREVIEW
       ====================================================== */}
 
       {activeKhatm && (
@@ -1137,6 +1107,7 @@ export default function Home() {
           khatmId={
             activeKhatm._id
           }
+
           items={
             activityLog
           }

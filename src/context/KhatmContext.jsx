@@ -6,7 +6,9 @@ import {
   useCallback,
 } from "react";
 
-import { useAuth } from "./AuthContext";
+import {
+  useAuth,
+} from "./AuthContext";
 
 import {
   createKhatm as createKhatmApi,
@@ -15,6 +17,7 @@ import {
   joinKhatmApi,
   claimParaApi,
   completeParaApi,
+  completeKhatmApi,
   getMembers,
   getActivity,
 } from "../services/khatmApi";
@@ -28,31 +31,50 @@ import {
   deleteReadingProgress as deleteReadingProgressApi,
 } from "../services/readingProgressApi";
 
-const KhatmContext = createContext(null);
 
-export function KhatmProvider({ children }) {
+const KhatmContext =
+  createContext(null);
+
+
+export function KhatmProvider({
+  children,
+}) {
   const {
     user,
     token,
     isAuthenticated,
   } = useAuth();
 
-  const [khatms, setKhatms] =
-    useState([]);
 
-  const [members, setMembers] =
-    useState([]);
+  const [
+    khatms,
+    setKhatms,
+  ] = useState([]);
 
-  const [activityLog, setActivityLog] =
-    useState([]);
 
-  const [khatmLoading, setKhatmLoading] =
-    useState(false);
+  const [
+    members,
+    setMembers,
+  ] = useState([]);
+
+
+  const [
+    activityLog,
+    setActivityLog,
+  ] = useState([]);
+
+
+  const [
+    khatmLoading,
+    setKhatmLoading,
+  ] = useState(false);
+
 
   const [
     readingProgress,
     setReadingProgress,
   ] = useState({});
+
 
   /*
    * ========================================
@@ -61,40 +83,59 @@ export function KhatmProvider({ children }) {
    */
 
   const loadKhatms =
-    useCallback(async () => {
-      if (!token) {
-        setKhatms([]);
+    useCallback(
+      async () => {
+        if (!token) {
+          setKhatms([]);
 
-        return [];
-      }
+          return [];
+        }
 
-      try {
-        setKhatmLoading(true);
 
-        const result =
-          await getMyKhatms(token);
+        try {
+          setKhatmLoading(
+            true,
+          );
 
-        const loadedKhatms =
-          result.data || [];
 
-        setKhatms(
-          loadedKhatms,
-        );
+          const result =
+            await getMyKhatms(
+              token,
+            );
 
-        return loadedKhatms;
-      } catch (error) {
-        console.error(
-          "Failed to load Khatms:",
-          error.message,
-        );
 
-        setKhatms([]);
+          const loadedKhatms =
+            result.data || [];
 
-        return [];
-      } finally {
-        setKhatmLoading(false);
-      }
-    }, [token]);
+
+          setKhatms(
+            loadedKhatms,
+          );
+
+
+          return loadedKhatms;
+
+        } catch (error) {
+          console.error(
+            "Failed to load Khatms:",
+            error.message,
+          );
+
+
+          setKhatms([]);
+
+
+          return [];
+
+        } finally {
+          setKhatmLoading(
+            false,
+          );
+        }
+      },
+      [token],
+    );
+
 
   /*
    * ========================================
@@ -108,10 +149,14 @@ export function KhatmProvider({ children }) {
       token
     ) {
       loadKhatms();
+
     } else {
       setKhatms([]);
+
       setMembers([]);
+
       setActivityLog([]);
+
       setReadingProgress({});
     }
   }, [
@@ -119,6 +164,7 @@ export function KhatmProvider({ children }) {
     token,
     loadKhatms,
   ]);
+
 
   /*
    * ========================================
@@ -133,11 +179,13 @@ export function KhatmProvider({ children }) {
           (k) =>
             String(
               k._id || k.id,
-            ) === String(id),
+            ) ===
+            String(id),
         );
       },
       [khatms],
     );
+
 
   /*
    * ========================================
@@ -147,12 +195,15 @@ export function KhatmProvider({ children }) {
 
   const getKhatmFromInvite =
     useCallback(
-      async (inviteCode) => {
+      async (
+        inviteCode,
+      ) => {
         if (!token) {
           throw new Error(
             "You must be logged in.",
           );
         }
+
 
         const result =
           await getKhatmByInviteCode(
@@ -160,10 +211,12 @@ export function KhatmProvider({ children }) {
             token,
           );
 
+
         return result.data;
       },
       [token],
     );
+
 
   /*
    * ========================================
@@ -180,13 +233,16 @@ export function KhatmProvider({ children }) {
           );
         }
 
+
         const result =
           await createKhatmApi(
             data,
             token,
           );
 
+
         await loadKhatms();
+
 
         return result.data;
       },
@@ -195,6 +251,7 @@ export function KhatmProvider({ children }) {
         loadKhatms,
       ],
     );
+
 
   /*
    * ========================================
@@ -204,12 +261,15 @@ export function KhatmProvider({ children }) {
 
   const joinKhatm =
     useCallback(
-      async (khatmId) => {
+      async (
+        khatmId,
+      ) => {
         if (!token) {
           throw new Error(
             "You must be logged in.",
           );
         }
+
 
         const result =
           await joinKhatmApi(
@@ -217,7 +277,9 @@ export function KhatmProvider({ children }) {
             token,
           );
 
+
         await loadKhatms();
+
 
         return result.data;
       },
@@ -226,6 +288,7 @@ export function KhatmProvider({ children }) {
         loadKhatms,
       ],
     );
+
 
   /*
    * ========================================
@@ -245,6 +308,7 @@ export function KhatmProvider({ children }) {
           );
         }
 
+
         const result =
           await claimParaApi(
             khatmId,
@@ -252,8 +316,10 @@ export function KhatmProvider({ children }) {
             token,
           );
 
+
         const freshKhatms =
           await loadKhatms();
+
 
         const updatedKhatm =
           freshKhatms.find(
@@ -265,6 +331,7 @@ export function KhatmProvider({ children }) {
           ) ||
           result.data;
 
+
         return updatedKhatm;
       },
       [
@@ -272,6 +339,7 @@ export function KhatmProvider({ children }) {
         loadKhatms,
       ],
     );
+
 
   /*
    * ========================================
@@ -291,6 +359,7 @@ export function KhatmProvider({ children }) {
           );
         }
 
+
         const result =
           await completeParaApi(
             khatmId,
@@ -298,8 +367,10 @@ export function KhatmProvider({ children }) {
             token,
           );
 
+
         const freshKhatms =
           await loadKhatms();
+
 
         const updatedKhatm =
           freshKhatms.find(
@@ -311,6 +382,7 @@ export function KhatmProvider({ children }) {
           ) ||
           result.data;
 
+
         return updatedKhatm;
       },
       [
@@ -318,6 +390,69 @@ export function KhatmProvider({ children }) {
         loadKhatms,
       ],
     );
+
+
+  /*
+   * ========================================
+   * COMPLETE ENTIRE KHATM
+   *
+   * Called only after the creator finishes
+   * the final Khatm Dua and presses Ameen.
+   *
+   * Backend still performs the real security
+   * checks:
+   * - creator only
+   * - all 30 Juz completed
+   * ========================================
+   */
+
+  const completeKhatm =
+    useCallback(
+      async (
+        khatmId,
+      ) => {
+        if (!token) {
+          throw new Error(
+            "You must be logged in.",
+          );
+        }
+
+
+        const result =
+          await completeKhatmApi(
+            khatmId,
+            token,
+          );
+
+
+        /*
+         * Reload Khatms so every screen gets
+         * the persisted completed status.
+         */
+
+        const freshKhatms =
+          await loadKhatms();
+
+
+        const updatedKhatm =
+          freshKhatms.find(
+            (k) =>
+              String(
+                k._id || k.id,
+              ) ===
+              String(khatmId),
+          ) ||
+          result.data;
+
+
+        return updatedKhatm;
+      },
+      [
+        token,
+        loadKhatms,
+      ],
+    );
+
 
   /*
    * ========================================
@@ -327,10 +462,13 @@ export function KhatmProvider({ children }) {
 
   const loadMembers =
     useCallback(
-      async (khatmId) => {
+      async (
+        khatmId,
+      ) => {
         if (!token) {
           return [];
         }
+
 
         const result =
           await getMembers(
@@ -338,17 +476,21 @@ export function KhatmProvider({ children }) {
             token,
           );
 
+
         const loadedMembers =
           result.data || [];
+
 
         setMembers(
           loadedMembers,
         );
 
+
         return loadedMembers;
       },
       [token],
     );
+
 
   /*
    * ========================================
@@ -358,10 +500,13 @@ export function KhatmProvider({ children }) {
 
   const loadActivity =
     useCallback(
-      async (khatmId) => {
+      async (
+        khatmId,
+      ) => {
         if (!token) {
           return [];
         }
+
 
         const result =
           await getActivity(
@@ -369,17 +514,21 @@ export function KhatmProvider({ children }) {
             token,
           );
 
+
         const loadedActivity =
           result.data || [];
+
 
         setActivityLog(
           loadedActivity,
         );
 
+
         return loadedActivity;
       },
       [token],
     );
+
 
   /*
    * ========================================
@@ -388,20 +537,26 @@ export function KhatmProvider({ children }) {
    */
 
   const getAllReadingProgress =
-    useCallback(async () => {
-      if (!token) {
-        throw new Error(
-          "You must be logged in.",
-        );
-      }
+    useCallback(
+      async () => {
+        if (!token) {
+          throw new Error(
+            "You must be logged in.",
+          );
+        }
 
-      const result =
-        await getAllReadingProgressApi(
-          token,
-        );
 
-      return result.data || [];
-    }, [token]);
+        const result =
+          await getAllReadingProgressApi(
+            token,
+          );
+
+
+        return result.data || [];
+      },
+      [token],
+    );
+
 
   /*
    * ========================================
@@ -410,20 +565,26 @@ export function KhatmProvider({ children }) {
    */
 
   const getQuranBookmarks =
-    useCallback(async () => {
-      if (!token) {
-        throw new Error(
-          "You must be logged in.",
-        );
-      }
+    useCallback(
+      async () => {
+        if (!token) {
+          throw new Error(
+            "You must be logged in.",
+          );
+        }
 
-      const result =
-        await getQuranBookmarksApi(
-          token,
-        );
 
-      return result.data || [];
-    }, [token]);
+        const result =
+          await getQuranBookmarksApi(
+            token,
+          );
+
+
+        return result.data || [];
+      },
+      [token],
+    );
+
 
   /*
    * ========================================
@@ -433,12 +594,15 @@ export function KhatmProvider({ children }) {
 
   const saveQuranBookmark =
     useCallback(
-      async (data) => {
+      async (
+        data,
+      ) => {
         if (!token) {
           throw new Error(
             "You must be logged in.",
           );
         }
+
 
         const result =
           await saveQuranBookmarkApi(
@@ -446,10 +610,12 @@ export function KhatmProvider({ children }) {
             token,
           );
 
+
         return result.data;
       },
       [token],
     );
+
 
   /*
    * ========================================
@@ -469,6 +635,7 @@ export function KhatmProvider({ children }) {
           );
         }
 
+
         const result =
           await getReadingProgressApi(
             khatmId,
@@ -476,23 +643,29 @@ export function KhatmProvider({ children }) {
             token,
           );
 
+
         const progress =
           result.data || null;
+
 
         const key =
           `${khatmId}-${paraNumber}`;
 
+
         setReadingProgress(
           (prev) => ({
             ...prev,
-            [key]: progress,
+            [key]:
+              progress,
           }),
         );
+
 
         return progress;
       },
       [token],
     );
+
 
   /*
    * ========================================
@@ -513,6 +686,7 @@ export function KhatmProvider({ children }) {
           );
         }
 
+
         const result =
           await saveReadingProgressApi(
             khatmId,
@@ -521,23 +695,29 @@ export function KhatmProvider({ children }) {
             token,
           );
 
+
         const progress =
           result.data;
+
 
         const key =
           `${khatmId}-${paraNumber}`;
 
+
         setReadingProgress(
           (prev) => ({
             ...prev,
-            [key]: progress,
+            [key]:
+              progress,
           }),
         );
+
 
         return progress;
       },
       [token],
     );
+
 
   /*
    * ========================================
@@ -547,12 +727,15 @@ export function KhatmProvider({ children }) {
 
   const deleteReadingProgress =
     useCallback(
-      async (progressId) => {
+      async (
+        progressId,
+      ) => {
         if (!token) {
           throw new Error(
             "You must be logged in.",
           );
         }
+
 
         const result =
           await deleteReadingProgressApi(
@@ -560,31 +743,44 @@ export function KhatmProvider({ children }) {
             token,
           );
 
+
         setReadingProgress(
           (prev) => {
             const updated = {
               ...prev,
             };
 
-            Object.keys(updated).forEach(
-              (key) => {
+
+            Object.keys(
+              updated,
+            ).forEach(
+              (
+                key,
+              ) => {
                 if (
-                  updated[key]?._id ===
+                  updated[
+                    key
+                  ]?._id ===
                   progressId
                 ) {
-                  delete updated[key];
+                  delete updated[
+                    key
+                  ];
                 }
               },
             );
+
 
             return updated;
           },
         );
 
+
         return result.data;
       },
       [token],
     );
+
 
   /*
    * ========================================
@@ -607,6 +803,7 @@ export function KhatmProvider({ children }) {
 
         readingProgress,
 
+
         /*
          * Reading Progress
          */
@@ -622,6 +819,7 @@ export function KhatmProvider({ children }) {
         saveReadingProgress,
 
         deleteReadingProgress,
+
 
         /*
          * Khatm
@@ -641,6 +839,8 @@ export function KhatmProvider({ children }) {
 
         completePara,
 
+        completeKhatm,
+
         loadMembers,
 
         loadActivity,
@@ -651,15 +851,20 @@ export function KhatmProvider({ children }) {
   );
 }
 
+
 export function useKhatms() {
   const ctx =
-    useContext(KhatmContext);
+    useContext(
+      KhatmContext,
+    );
+
 
   if (!ctx) {
     throw new Error(
       "useKhatms must be used within KhatmProvider",
     );
   }
+
 
   return ctx;
 }

@@ -687,23 +687,69 @@ export default function ParaReading() {
 
   /* =========================================================
      COMPLETE JUZ
-     
-     IMPORTANT:
-     After successful Juz completion,
-     go DIRECTLY to the Juz Dua page.
-     
-     The previous intermediate completion
-     screen is intentionally skipped.
+
+     IMPORTANT BUSINESS RULE:
+
+     1. The Juz being completed is always paraNumber.
+     2. If paraNumber is 1-29:
+        → normal Juz completion
+        → Juz Dua
+        → Ameen
+        → Home
+     3. If paraNumber is 30:
+        → still normal Juz completion
+        → Juz Dua
+        → Ameen
+        → Home
+        → ActiveKhatmCard can now detect 30/30
+        → creator sees "Make Dua for This Khatm"
+     4. Completing Juz 30 NEVER directly completes
+        the Khatm.
   ========================================================= */
 
   const handleComplete =
     async () => {
       try {
-        await completePara(
-          id,
-          paraNumber,
-        );
 
+        /*
+         * This is the exact Juz that
+         * the user has completed.
+         */
+
+        const completedJuzNumber =
+          paraNumber;
+
+
+        /*
+         * Check whether this is the
+         * final Juz of the Quran.
+         *
+         * This does NOT complete the Khatm.
+         */
+
+        const isFinalJuz =
+          completedJuzNumber ===
+          TOTAL_PARAS;
+
+
+        /*
+         * Complete only this Juz.
+         *
+         * completePara() already handles
+         * the existing backend completion logic.
+         */
+
+        const updatedKhatm =
+          await completePara(
+            id,
+            completedJuzNumber,
+          );
+
+
+        /*
+         * Mark current reader screen
+         * as completed.
+         */
 
         setDone(
           true,
@@ -715,9 +761,45 @@ export default function ParaReading() {
         );
 
 
+        /*
+         * Keep track of how many Juz
+         * are completed after the operation.
+         *
+         * This is useful for the final
+         * 30/30 unlock flow.
+         */
+
+        const completedJuzCount =
+          updatedKhatm?.paras?.filter(
+            (p) =>
+              p.status ===
+              "completed",
+          ).length ??
+          null;
+
+
+        /*
+         * IMPORTANT:
+         *
+         * Both normal Juz completion
+         * and Juz 30 completion go to
+         * the SAME normal Juz Dua.
+         *
+         * We only pass information about
+         * which Juz was completed.
+         */
+
         navigate(
           `/khatm/${id}/dua`,
+          {
+            state: {
+              completedJuzNumber,
+              isFinalJuz,
+              completedJuzCount,
+            },
+          },
         );
+
       } catch (error) {
         console.error(
           "Failed to complete Juz:",
@@ -860,9 +942,6 @@ export default function ParaReading() {
 
                         {/* =====================================
                             SURAH HEADER
-
-                            Only shown when this group
-                            actually begins at Ayah 1.
                         ====================================== */}
 
                         {showSurahHeader && (
