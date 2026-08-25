@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Volume2,
   Loader2,
+  Play,
 } from "lucide-react";
 
 import {
@@ -44,7 +45,9 @@ import Button from "../../components/common/Button";
 
 import SurahHeader from "../../components/quran/SurahHeader";
 
+
 const TOTAL_SURAHS = 114;
+
 
 const BISMILLAH =
   "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
@@ -54,7 +57,9 @@ const BISMILLAH =
    REMOVE BISMILLAH FROM FIRST AYAH
 ========================================================= */
 
-function removeBismillah(text = "") {
+function removeBismillah(
+  text = "",
+) {
   return text
     .replace(
       /^(?:بِسْمِ|بِسْمِ)\s+(?:ٱ|ا)?للَّ?هِ\s+(?:ٱ|ا)?لرَّحْمَٰنِ\s+(?:ٱ|ا)?لرَّحِيمِ[\s\uFEFF]*/,
@@ -68,7 +73,9 @@ function removeBismillah(text = "") {
    ARABIC AYAH NUMBER
 ========================================================= */
 
-function toArabicNumber(number) {
+function toArabicNumber(
+  number,
+) {
   return String(number)
     .split("")
     .map(
@@ -80,17 +87,389 @@ function toArabicNumber(number) {
 
 
 /* =========================================================
+   MOBILE SURAH HEADER
+========================================================= */
+
+function MobileSurahHeader({
+  surah,
+  revelationArabic,
+  isPlaying,
+  onAudio,
+}) {
+  return (
+    <div
+      className="
+        sm:hidden
+        w-full
+        overflow-hidden
+        rounded-2xl
+        border
+        border-gold/35
+        bg-[#FFFDF8]
+        shadow-card
+      "
+    >
+
+      {/* =====================================================
+          FIVE BOX HEADER
+
+          Ruku
+          Revelation Order
+          Surah Name
+          Revelation Type
+          Ayahs
+      ====================================================== */}
+
+      <div
+        className="
+          grid
+          w-full
+          grid-cols-[0.9fr_0.9fr_1.55fr_0.9fr_0.9fr]
+        "
+      >
+
+        {/* =================================================
+            1. RUKU
+        ================================================== */}
+
+        <div
+          className="
+            min-w-0
+            border-r
+            border-gold/25
+            px-1.5
+            py-3
+            text-center
+          "
+        >
+
+          <p
+            className="
+              text-[7px]
+              leading-3
+              uppercase
+              tracking-[0.08em]
+              text-ink-faint
+            "
+          >
+            Ruku
+          </p>
+
+
+          <div
+            className="
+              mx-auto
+              mt-1
+              flex
+              h-5
+              w-5
+              items-center
+              justify-center
+              rounded-full
+              border
+              border-gold/60
+              text-[10px]
+              font-medium
+              text-gold
+            "
+          >
+            ع
+          </div>
+
+
+          <p
+            className="
+              mt-1
+              text-[12px]
+              font-semibold
+              leading-4
+              text-emerald-deep
+            "
+          >
+            {
+              surah.totalRukus ??
+              "—"
+            }
+          </p>
+
+        </div>
+
+
+        {/* =================================================
+            2. REVELATION ORDER
+        ================================================== */}
+
+        <div
+          className="
+            min-w-0
+            border-r
+            border-gold/25
+            px-1.5
+            py-3
+            text-center
+          "
+        >
+
+          <p
+            className="
+              text-[7px]
+              leading-3
+              text-ink-faint
+            "
+          >
+            Revelation
+          </p>
+
+          <p
+            className="
+              text-[7px]
+              leading-3
+              text-ink-faint
+            "
+          >
+            Order
+          </p>
+
+
+          <p
+            className="
+              mt-2
+              text-[13px]
+              font-semibold
+              leading-4
+              text-emerald-deep
+            "
+          >
+            {
+              surah.revelationOrder ??
+              "—"
+            }
+          </p>
+
+        </div>
+
+
+        {/* =================================================
+            3. SURAH NAME
+        ================================================== */}
+
+        <div
+          className="
+            relative
+            min-w-0
+            border-r
+            border-gold/25
+            bg-[#FBF9F1]
+            px-1.5
+            py-2.5
+            text-center
+          "
+        >
+
+          {/* PLAY BUTTON */}
+
+          <button
+            type="button"
+            onClick={
+              onAudio
+            }
+            className="
+              absolute
+              right-1.5
+              top-1.5
+              flex
+              h-6
+              w-6
+              items-center
+              justify-center
+              rounded-full
+              bg-emerald-soft
+              text-emerald-deep
+            "
+            aria-label={
+              isPlaying
+                ? "Stop Surah audio"
+                : "Play Surah audio"
+            }
+          >
+
+            {isPlaying ? (
+              <Volume2
+                size={12}
+              />
+            ) : (
+              <Play
+                size={11}
+                fill="currentColor"
+                className="ml-0.5"
+              />
+            )}
+
+          </button>
+
+
+          {/* ARABIC NAME */}
+
+          <p
+            dir="rtl"
+            className="
+              mt-4
+              font-quran
+              text-[16px]
+              font-bold
+              leading-7
+              text-emerald-deep
+              break-words
+            "
+          >
+            {
+              surah.arabicName
+            }
+          </p>
+
+
+          {/* ENGLISH NAME */}
+
+          <p
+            className="
+              mt-1
+              truncate
+              text-[8px]
+              font-medium
+              text-ink-soft
+            "
+          >
+            {
+              surah.name
+            }
+          </p>
+
+        </div>
+
+
+        {/* =================================================
+            4. REVELATION TYPE
+        ================================================== */}
+
+        <div
+          className="
+            min-w-0
+            border-r
+            border-gold/25
+            px-1
+            py-3
+            text-center
+          "
+        >
+
+          <p
+            className="
+              text-[7px]
+              uppercase
+              tracking-[0.05em]
+              text-ink-faint
+            "
+          >
+            Revelation
+          </p>
+
+
+          <p
+            dir="rtl"
+            className="
+              mt-2
+              font-quran
+              text-[12px]
+              font-bold
+              leading-5
+              text-emerald-deep
+            "
+          >
+            {
+              revelationArabic
+            }
+          </p>
+
+        </div>
+
+
+        {/* =================================================
+            5. AYAHS
+        ================================================== */}
+
+        <div
+          className="
+            min-w-0
+            px-1.5
+            py-3
+            text-center
+          "
+        >
+
+          <p
+            className="
+              text-[7px]
+              leading-3
+              text-ink-faint
+            "
+          >
+            Number of
+          </p>
+
+          <p
+            className="
+              text-[7px]
+              leading-3
+              text-ink-faint
+            "
+          >
+            Ayahs
+          </p>
+
+
+          <p
+            className="
+              mt-2
+              text-[14px]
+              font-semibold
+              leading-4
+              text-emerald-deep
+            "
+          >
+            {
+              surah.verses
+            }
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+
+/* =========================================================
    SURAH READING
 ========================================================= */
 
 export default function SurahReading() {
-  const { id } = useParams();
+  const {
+    id,
+  } = useParams();
 
-  const navigate = useNavigate();
 
-  const location = useLocation();
+  const navigate =
+    useNavigate();
 
-  const surahNumber = Number(id);
+
+  const location =
+    useLocation();
+
+
+  const surahNumber =
+    Number(id);
 
 
   /* =========================================================
@@ -122,10 +501,12 @@ export default function SurahReading() {
     setSurah,
   ] = useState(null);
 
+
   const [
     error,
     setError,
   ] = useState(null);
+
 
   const [
     tab,
@@ -133,21 +514,23 @@ export default function SurahReading() {
   ] = useState("quran");
 
 
-  /*
-   * Existing top-right bookmark.
-   * Kept unchanged.
-   */
-
   const [
     bookmarked,
     setBookmarked,
   ] = useState(false);
 
 
+  /*
+   * Existing font size feature.
+   *
+   * Starts slightly smaller for comfortable
+   * mobile reading but A-/A+ still works.
+   */
+
   const [
     fontSize,
     setFontSize,
-  ] = useState(23);
+  ] = useState(22);
 
 
   const [
@@ -155,11 +538,6 @@ export default function SurahReading() {
     setSelectedAyah,
   ] = useState(null);
 
-
-  /*
-   * Backend saved Quran bookmark
-   * for the current Surah.
-   */
 
   const [
     savedAyah,
@@ -185,11 +563,9 @@ export default function SurahReading() {
   ] = useState(false);
 
 
-  /*
-   * ========================================
-   * AUTO SCROLL REF
-   * ========================================
-   */
+  /* =========================================================
+     AUTO SCROLL REF
+  ========================================================= */
 
   const hasAutoScrolledRef =
     useRef(false);
@@ -202,9 +578,11 @@ export default function SurahReading() {
   const {
     playingAyah,
     playingSurah,
-    toggle: toggleAyahAudio,
+    toggle:
+      toggleAyahAudio,
     toggleSurah,
-    reset: resetAudio,
+    reset:
+      resetAudio,
   } = useAyahAudio();
 
 
@@ -231,9 +609,11 @@ export default function SurahReading() {
         return;
       }
 
+
       setError(null);
 
       setSurah(null);
+
 
       fetchSurah(
         surahNumber,
@@ -258,18 +638,23 @@ export default function SurahReading() {
     hasAutoScrolledRef.current =
       false;
 
+
     window.scrollTo(
       0,
       0,
     );
 
+
     resetAudio();
+
 
     setSelectedAyah(null);
 
     setSavedAyah(null);
 
+
     load();
+
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
@@ -284,8 +669,10 @@ export default function SurahReading() {
       return;
     }
 
+
     let cancelled =
       false;
+
 
     async function loadBookmark() {
       try {
@@ -293,12 +680,15 @@ export default function SurahReading() {
           true,
         );
 
+
         const bookmarks =
           await getQuranBookmarks();
+
 
         if (cancelled) {
           return;
         }
+
 
         const currentBookmark =
           bookmarks.find(
@@ -309,40 +699,45 @@ export default function SurahReading() {
               surahNumber,
           );
 
+
         if (currentBookmark) {
           setSavedAyah(
             currentBookmark,
           );
 
+
           localStorage.removeItem(
             `quran-reading-progress-surah-${surahNumber}`,
           );
+
 
           return;
         }
 
 
-        /*
-         * ====================================
-         * LEGACY LOCALSTORAGE FALLBACK
-         * ====================================
-         */
+        /* ================================================
+           LEGACY LOCALSTORAGE FALLBACK
+        ================================================= */
 
         const storageKey =
           `quran-reading-progress-surah-${surahNumber}`;
+
 
         const saved =
           localStorage.getItem(
             storageKey,
           );
 
+
         if (!saved) {
           setSavedAyah(
             null,
           );
 
+
           return;
         }
+
 
         try {
           const parsed =
@@ -350,9 +745,11 @@ export default function SurahReading() {
               saved,
             );
 
+
           setSavedAyah(
             parsed,
           );
+
         } catch (
           storageError
         ) {
@@ -361,14 +758,19 @@ export default function SurahReading() {
             storageError,
           );
 
+
           setSavedAyah(
             null,
           );
         }
-      } catch (error) {
+
+      } catch (
+        error
+      ) {
         if (cancelled) {
           return;
         }
+
 
         console.error(
           "Failed to load Quran bookmark:",
@@ -376,26 +778,29 @@ export default function SurahReading() {
         );
 
 
-        /*
-         * Preserve old localStorage
-         * behavior if backend fails.
-         */
+        /* ================================================
+           PRESERVE LOCALSTORAGE FALLBACK
+        ================================================= */
 
         const storageKey =
           `quran-reading-progress-surah-${surahNumber}`;
+
 
         const saved =
           localStorage.getItem(
             storageKey,
           );
 
+
         if (!saved) {
           setSavedAyah(
             null,
           );
 
+
           return;
         }
+
 
         try {
           const parsed =
@@ -403,9 +808,11 @@ export default function SurahReading() {
               saved,
             );
 
+
           setSavedAyah(
             parsed,
           );
+
         } catch (
           storageError
         ) {
@@ -414,10 +821,12 @@ export default function SurahReading() {
             storageError,
           );
 
+
           setSavedAyah(
             null,
           );
         }
+
       } finally {
         if (!cancelled) {
           setLoadingBookmark(
@@ -427,11 +836,14 @@ export default function SurahReading() {
       }
     }
 
+
     loadBookmark();
+
 
     return () => {
       cancelled = true;
     };
+
   }, [
     surahNumber,
     getQuranBookmarks,
@@ -452,10 +864,11 @@ export default function SurahReading() {
       return;
     }
 
+
     /*
      * Priority:
      *
-     * 1. Saved page navigation
+     * 1. Saved navigation state
      * 2. Current Surah saved bookmark
      */
 
@@ -463,14 +876,17 @@ export default function SurahReading() {
       navigationSavedAyah ||
       savedAyah;
 
+
     if (
       !ayahToScroll?.ayahNumber
     ) {
       return;
     }
 
+
     const targetId =
       `surah-ayah-${surahNumber}-${ayahToScroll.ayahNumber}`;
+
 
     const timer =
       window.setTimeout(() => {
@@ -479,26 +895,40 @@ export default function SurahReading() {
             targetId,
           );
 
+
         if (!element) {
           console.warn(
             "Saved Surah bookmark element not found:",
             targetId,
           );
 
+
           return;
         }
 
+
+        const isMobile =
+          window.innerWidth <
+          640;
+
+
         const headerOffset =
-          120;
+          isMobile
+            ? 100
+            : 120;
+
 
         const elementPosition =
-          element.getBoundingClientRect()
+          element
+            .getBoundingClientRect()
             .top;
+
 
         const offsetPosition =
           elementPosition +
           window.scrollY -
           headerOffset;
+
 
         window.scrollTo({
           top: Math.max(
@@ -509,15 +939,19 @@ export default function SurahReading() {
             "smooth",
         });
 
+
         hasAutoScrolledRef.current =
           true;
+
       }, 500);
+
 
     return () => {
       window.clearTimeout(
         timer,
       );
     };
+
   }, [
     surah,
     savedAyah,
@@ -538,17 +972,11 @@ export default function SurahReading() {
         return;
       }
 
-      /*
-       * This page already has the
-       * COMPLETE Surah loaded.
-       *
-       * So the header plays the
-       * complete Surah directly.
-       */
 
       const currentSurahNumber =
         surah.number ??
         surahNumber;
+
 
       toggleSurah(
         currentSurahNumber,
@@ -561,17 +989,18 @@ export default function SurahReading() {
      BACK NAVIGATION
   ========================================================= */
 
-  const handleBack = () => {
-    navigate(
-      "/quran",
-      {
-        state: {
-          activeTab:
-            "surah",
+  const handleBack =
+    () => {
+      navigate(
+        "/quran",
+        {
+          state: {
+            activeTab:
+              "surah",
+          },
         },
-      },
-    );
-  };
+      );
+    };
 
 
   /* =========================================================
@@ -583,6 +1012,7 @@ export default function SurahReading() {
       const target =
         surahNumber +
         delta;
+
 
       if (
         target >= 1 &&
@@ -601,7 +1031,9 @@ export default function SurahReading() {
   ========================================================= */
 
   const handleAyahClick =
-    (ayah) => {
+    (
+      ayah,
+    ) => {
       setSelectedAyah({
         number:
           ayah.number,
@@ -622,10 +1054,12 @@ export default function SurahReading() {
         return;
       }
 
+
       try {
         setSavingBookmark(
           true,
         );
+
 
         const progress =
           await saveQuranBookmark({
@@ -638,22 +1072,29 @@ export default function SurahReading() {
               selectedAyah.globalNumber,
           });
 
+
         setSavedAyah(
           progress,
         );
+
 
         localStorage.removeItem(
           `quran-reading-progress-surah-${surahNumber}`,
         );
 
+
         setSelectedAyah(
           null,
         );
-      } catch (error) {
+
+      } catch (
+        error
+      ) {
         console.error(
           "Failed to save Quran bookmark:",
           error.message,
         );
+
       } finally {
         setSavingBookmark(
           false,
@@ -676,42 +1117,54 @@ export default function SurahReading() {
         const storageKey =
           `quran-reading-progress-surah-${surahNumber}`;
 
+
         localStorage.removeItem(
           storageKey,
         );
+
 
         setSavedAyah(
           null,
         );
 
+
         setSelectedAyah(
           null,
         );
 
+
         return;
       }
+
 
       try {
         setDeletingBookmark(
           true,
         );
 
+
         await deleteReadingProgress(
           savedAyah._id,
         );
+
 
         setSavedAyah(
           null,
         );
 
+
         setSelectedAyah(
           null,
         );
-      } catch (error) {
+
+      } catch (
+        error
+      ) {
         console.error(
           "Failed to delete Quran bookmark:",
           error.message,
         );
+
       } finally {
         setDeletingBookmark(
           false,
@@ -750,43 +1203,111 @@ export default function SurahReading() {
   ========================================================= */
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div
+      className="
+        flex
+        min-h-screen
+        flex-col
+        bg-cream
+      "
+    >
 
-      {/* =========================
+      {/* =====================================================
           TOP HEADER
-      ========================= */}
+          
+          UNCHANGED DESIGN
+      ====================================================== */}
 
-      <div className="sticky top-0 z-20 bg-cream/90 backdrop-blur px-5 pt-4 pb-2">
+      <div
+        className="
+          sticky
+          top-0
+          z-20
+          bg-cream/95
+          px-3
+          pb-2
+          pt-3
+          backdrop-blur
+          sm:px-5
+          sm:pt-4
+        "
+      >
 
-        <div className="flex items-center justify-between mb-4">
+        <div
+          className="
+            mb-3
+            flex
+            items-center
+            justify-between
+            sm:mb-4
+          "
+        >
 
           {/* BACK */}
 
           <button
+            type="button"
             onClick={
               handleBack
             }
-            className="w-10 h-10 rounded-full bg-emerald-soft flex items-center justify-center"
+            className="
+              flex
+              h-9
+              w-9
+              shrink-0
+              items-center
+              justify-center
+              rounded-full
+              bg-emerald-soft
+              text-emerald-deep
+              sm:h-10
+              sm:w-10
+            "
+            aria-label="Back to Quran"
           >
+
             <ChevronLeft
               size={20}
-              className="text-emerald-deep"
             />
+
           </button>
 
 
           {/* TITLE */}
 
-          <div className="text-center">
+          <div
+            className="
+              min-w-0
+              flex-1
+              px-3
+              text-center
+            "
+          >
 
-            <h1 className="font-display text-lg font-medium text-ink">
+            <h1
+              className="
+                truncate
+                font-display
+                text-base
+                font-medium
+                text-ink
+                sm:text-lg
+              "
+            >
               {
                 surah?.name ||
                 `Surah ${surahNumber}`
               }
             </h1>
 
-            <p className="text-xs text-ink-soft">
+
+            <p
+              className="
+                text-[11px]
+                text-ink-soft
+                sm:text-xs
+              "
+            >
               {surah
                 ? `${surah.verses} Ayahs`
                 : "\u00A0"}
@@ -798,29 +1319,59 @@ export default function SurahReading() {
           {/* TOP RIGHT BOOKMARK */}
 
           <button
+            type="button"
             onClick={() =>
               setBookmarked(
                 (b) => !b,
               )
             }
-            className="w-10 h-10 rounded-full bg-emerald-soft flex items-center justify-center"
+            className="
+              flex
+              h-9
+              w-9
+              shrink-0
+              items-center
+              justify-center
+              rounded-full
+              bg-emerald-soft
+              sm:h-10
+              sm:w-10
+            "
+            aria-label="Bookmark Surah"
           >
+
             <Bookmark
               size={18}
               className={
                 bookmarked
-                  ? "text-gold fill-gold"
+                  ? "fill-gold text-gold"
                   : "text-emerald-deep"
               }
             />
+
           </button>
 
         </div>
 
 
-        {/* QURAN / TRANSLATION */}
+        {/* =================================================
+            QURAN / TRANSLATION
 
-        <div className="flex items-center gap-1.5 bg-emerald-soft/60 p-1 rounded-full mb-1">
+            UNCHANGED DESIGN
+        ================================================== */}
+
+        <div
+          className="
+            mb-1
+            flex
+            w-full
+            items-center
+            gap-1
+            rounded-full
+            bg-emerald-soft/60
+            p-1
+          "
+        >
 
           {[
             "quran",
@@ -829,16 +1380,30 @@ export default function SurahReading() {
             (t) => (
               <button
                 key={t}
+                type="button"
                 onClick={() =>
                   setTab(t)
                 }
-                className={`flex-1 text-[13px] font-semibold py-2 rounded-full capitalize transition-colors ${
-                  tab === t
-                    ? "bg-emerald text-cream shadow-soft"
-                    : "text-emerald-deep/70"
-                }`}
+                className={`
+                  min-w-0
+                  flex-1
+                  rounded-full
+                  py-2
+                  text-[12px]
+                  font-semibold
+                  capitalize
+                  transition-colors
+                  sm:text-[13px]
+                  ${
+                    tab === t
+                      ? "bg-emerald text-cream shadow-soft"
+                      : "text-emerald-deep/70"
+                  }
+                `}
               >
-                {t}
+                {
+                  t
+                }
               </button>
             ),
           )}
@@ -848,11 +1413,21 @@ export default function SurahReading() {
       </div>
 
 
-      {/* =========================
+      {/* =====================================================
           MAIN CONTENT
-      ========================= */}
+      ====================================================== */}
 
-      <div className="flex-1 px-5 pt-3 pb-6">
+      <div
+        className="
+          min-w-0
+          flex-1
+          overflow-x-hidden
+          px-3
+          pb-6
+          pt-3
+          sm:px-5
+        "
+      >
 
         {error ? (
           <QuranError
@@ -866,77 +1441,152 @@ export default function SurahReading() {
 
           <MushafFrame>
 
-            {/* =============================================
-                REUSABLE SURAH HEADER
-            ============================================== */}
+            {/* =================================================
+                SURAH INFORMATION HEADER
+            ================================================== */}
 
             <div className="mb-4">
-              <SurahHeader
-                number={
-                  surah.number
+
+              {/* =================================================
+                  DESKTOP / TABLET
+                  
+                  EXISTING CURRENT DESIGN
+                  
+                  >= 640px
+              ================================================== */}
+
+              <div className="hidden sm:block">
+
+                <SurahHeader
+                  number={
+                    surah.number
+                  }
+
+                  arabicName={
+                    surah.arabicName
+                  }
+
+                  revelationTypeArabic={
+                    revelationArabic
+                  }
+
+                  ayahCount={
+                    surah.verses
+                  }
+
+                  rukuCount={
+                    surah.totalRukus
+                  }
+
+                  revelationOrder={
+                    surah.revelationOrder
+                  }
+
+                  isPlaying={
+                    isThisSurahPlaying
+                  }
+
+                  onClick={
+                    handleSurahHeaderAudio
+                  }
+                />
+
+              </div>
+
+
+              {/* =================================================
+                  MOBILE
+                  
+                  < 640px
+                  
+                  5 BOX DESIGN
+              ================================================== */}
+
+              <MobileSurahHeader
+                surah={
+                  surah
                 }
 
-                arabicName={
-                  surah.arabicName
-                }
-
-                revelationTypeArabic={
+                revelationArabic={
                   revelationArabic
-                }
-
-                ayahCount={
-                  surah.verses
-                }
-
-                rukuCount={
-                  surah.totalRukus
-                }
-
-                revelationOrder={
-                  surah.revelationOrder
                 }
 
                 isPlaying={
                   isThisSurahPlaying
                 }
 
-                onClick={
+                onAudio={
                   handleSurahHeaderAudio
                 }
               />
+
             </div>
 
 
-            {/* =============================================
+            {/* =================================================
                 BISMILLAH
-            ============================================== */}
+            ================================================== */}
 
             {shouldShowBismillah && (
-              <p className="font-quran font-bold text-[24px] leading-relaxed text-center text-emerald-deep mb-5">
-                {BISMILLAH}
+              <p
+                dir="rtl"
+                className="
+                  mb-5
+                  px-2
+                  text-center
+                  font-quran
+                  text-[20px]
+                  font-bold
+                  leading-relaxed
+                  text-emerald-deep
+                  sm:text-[24px]
+                "
+              >
+                {
+                  BISMILLAH
+                }
               </p>
             )}
 
 
-            {/* =============================================
+            {/* =================================================
                 CONTINUOUS AYAH FLOW
-            ============================================== */}
+            ================================================== */}
 
             <div
               dir="rtl"
-              className="font-quran font-bold text-[#141414]"
+              className="
+                w-full
+                min-w-0
+                font-quran
+                font-bold
+                text-[#141414]
+              "
               style={{
-                fontSize,
-                lineHeight: 2.5,
+                fontSize:
+                  `${fontSize}px`,
+
+                lineHeight:
+                  2.35,
+
                 textAlign:
                   "justify",
+
                 textAlignLast:
                   "right",
+
+                overflowWrap:
+                  "anywhere",
+
+                wordBreak:
+                  "normal",
               }}
             >
 
               {surah.ayahs.map(
-                (ayah) => {
+                (
+                  ayah,
+                ) => {
 
                   const isSavedAyah =
                     savedAyah &&
@@ -975,7 +1625,9 @@ export default function SurahReading() {
                       className="inline"
                     >
 
-                      {/* AYAH TEXT */}
+                      {/* =====================================
+                          AYAH TEXT
+                      ====================================== */}
 
                       <span
                         role="button"
@@ -1001,11 +1653,17 @@ export default function SurahReading() {
                             );
                           }
                         }}
-                        className={`inline cursor-pointer rounded-md transition-colors ${
-                          isSavedAyah
-                            ? "bg-emerald-soft/80 text-emerald-deep"
-                            : "hover:bg-emerald-soft/40"
-                        }`}
+                        className={`
+                          inline
+                          cursor-pointer
+                          rounded-md
+                          transition-colors
+                          ${
+                            isSavedAyah
+                              ? "bg-emerald-soft/80 text-emerald-deep"
+                              : "hover:bg-emerald-soft/40"
+                          }
+                        `}
                         aria-label={`Set reading progress at ayah ${ayah.number}`}
                       >
                         {
@@ -1014,22 +1672,37 @@ export default function SurahReading() {
                       </span>
 
 
-                      {/* SAVED BOOKMARK */}
+                      {/* =====================================
+                          SAVED BOOKMARK
+                      ====================================== */}
 
                       {isSavedAyah && (
                         <span
                           dir="ltr"
-                          className="inline-flex items-center justify-center align-middle mx-1"
+                          className="
+                            mx-1
+                            inline-flex
+                            items-center
+                            justify-center
+                            align-middle
+                          "
                         >
+
                           <Bookmark
                             size={14}
-                            className="text-gold fill-gold"
+                            className="
+                              fill-gold
+                              text-gold
+                            "
                           />
+
                         </span>
                       )}
 
 
-                      {/* AYAH AUDIO */}
+                      {/* =====================================
+                          AYAH AUDIO / NUMBER
+                      ====================================== */}
 
                       <button
                         type="button"
@@ -1038,18 +1711,36 @@ export default function SurahReading() {
                             ayah.globalNumber,
                           )
                         }
-                        className="inline-flex items-center justify-center align-middle mx-1 text-gold hover:opacity-70 transition-opacity"
+                        className="
+                          mx-1
+                          inline-flex
+                          items-center
+                          justify-center
+                          align-middle
+                          text-gold
+                          transition-opacity
+                          hover:opacity-70
+                        "
                         aria-label={`Play recitation for ayah ${ayah.number}`}
                       >
 
                         {isPlaying ? (
                           <Volume2
-                            size={16}
+                            size={
+                              Math.max(
+                                fontSize -
+                                  7,
+                                15,
+                              )
+                            }
                             className="text-gold"
                           />
                         ) : (
                           <span
-                            className="text-gold font-quran"
+                            className="
+                              font-quran
+                              text-gold
+                            "
                             style={{
                               fontSize:
                                 Math.max(
@@ -1060,14 +1751,19 @@ export default function SurahReading() {
                             }}
                           >
                             ﴿
-                            {toArabicNumber(
-                              ayah.number,
-                            )}
+                            {
+                              toArabicNumber(
+                                ayah.number,
+                              )
+                            }
                             ﴾
                           </span>
                         )}
 
-                      </button>{" "}
+                      </button>
+
+
+                      {" "}
 
                     </span>
                   );
@@ -1080,66 +1776,128 @@ export default function SurahReading() {
 
         ) : (
 
-          /* =========================
+          /* =================================================
               TRANSLATION
-          ========================= */
+          ================================================== */
 
           <div className="space-y-5">
 
-            {/* SAME SURAH HEADER */}
+            {/* DESKTOP/TABLET HEADER */}
 
-            <SurahHeader
-              number={
-                surah.number
-              }
+            <div className="hidden sm:block">
 
-              arabicName={
-                surah.arabicName
-              }
+              <SurahHeader
+                number={
+                  surah.number
+                }
 
-              revelationTypeArabic={
-                revelationArabic
-              }
+                arabicName={
+                  surah.arabicName
+                }
 
-              ayahCount={
-                surah.verses
-              }
+                revelationTypeArabic={
+                  revelationArabic
+                }
 
-              rukuCount={
-                surah.totalRukus
-              }
+                ayahCount={
+                  surah.verses
+                }
 
-              revelationOrder={
-                surah.revelationOrder
-              }
+                rukuCount={
+                  surah.totalRukus
+                }
 
-              isPlaying={
-                isThisSurahPlaying
-              }
+                revelationOrder={
+                  surah.revelationOrder
+                }
 
-              onClick={
-                handleSurahHeaderAudio
-              }
-            />
+                isPlaying={
+                  isThisSurahPlaying
+                }
 
+                onClick={
+                  handleSurahHeaderAudio
+                }
+              />
+
+            </div>
+
+
+            {/* MOBILE HEADER */}
+
+            <div className="sm:hidden">
+
+              <MobileSurahHeader
+                surah={
+                  surah
+                }
+
+                revelationArabic={
+                  revelationArabic
+                }
+
+                isPlaying={
+                  isThisSurahPlaying
+                }
+
+                onAudio={
+                  handleSurahHeaderAudio
+                }
+              />
+
+            </div>
+
+
+            {/* TRANSLATION CONTENT */}
 
             <div className="space-y-5">
+
               {surah.ayahs.map(
-                (ayah) => (
+                (
+                  ayah,
+                ) => (
                   <div
                     key={
                       ayah.number
                     }
-                    className="flex gap-3"
+                    className="
+                      flex
+                      items-start
+                      gap-3
+                    "
                   >
 
-                    <span className="text-xs text-gold border border-gold/40 rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
+                    <span
+                      className="
+                        mt-0.5
+                        flex
+                        h-6
+                        w-6
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-full
+                        border
+                        border-gold/40
+                        text-xs
+                        text-gold
+                      "
+                    >
                       {
                         ayah.number
                       }
                     </span>
 
-                    <p className="text-[15px] text-ink leading-relaxed">
+
+                    <p
+                      className="
+                        min-w-0
+                        text-[14px]
+                        leading-relaxed
+                        text-ink
+                        sm:text-[15px]
+                      "
+                    >
                       {
                         ayah.translation
                       }
@@ -1148,25 +1906,37 @@ export default function SurahReading() {
                   </div>
                 ),
               )}
+
             </div>
 
           </div>
         )}
 
 
-        {/* =========================
+        {/* =================================================
             FONT SIZE
-        ========================= */}
+        ================================================== */}
 
         {surah &&
           tab === "quran" && (
-            <div className="flex items-center justify-center gap-3 mt-6">
+            <div
+              className="
+                mt-6
+                flex
+                items-center
+                justify-center
+                gap-3
+                pb-2
+              "
+            >
 
               <span className="text-xs text-ink-faint">
                 Font Size
               </span>
 
+
               <button
+                type="button"
                 onClick={() =>
                   setFontSize(
                     (f) =>
@@ -1176,12 +1946,39 @@ export default function SurahReading() {
                       ),
                   )
                 }
-                className="w-7 h-7 rounded-full bg-emerald-soft text-emerald-deep text-xs font-bold flex items-center justify-center"
+                className="
+                  flex
+                  h-8
+                  w-8
+                  items-center
+                  justify-center
+                  rounded-full
+                  bg-emerald-soft
+                  text-xs
+                  font-bold
+                  text-emerald-deep
+                "
               >
                 A-
               </button>
 
+
+              <span
+                className="
+                  min-w-7
+                  text-center
+                  text-[11px]
+                  text-ink-faint
+                "
+              >
+                {
+                  fontSize
+                }
+              </span>
+
+
               <button
+                type="button"
                 onClick={() =>
                   setFontSize(
                     (f) =>
@@ -1191,7 +1988,18 @@ export default function SurahReading() {
                       ),
                   )
                 }
-                className="w-7 h-7 rounded-full bg-emerald-soft text-emerald-deep text-xs font-bold flex items-center justify-center"
+                className="
+                  flex
+                  h-8
+                  w-8
+                  items-center
+                  justify-center
+                  rounded-full
+                  bg-emerald-soft
+                  text-xs
+                  font-bold
+                  text-emerald-deep
+                "
               >
                 A+
               </button>
@@ -1202,36 +2010,83 @@ export default function SurahReading() {
       </div>
 
 
-      {/* =========================
+      {/* =====================================================
           BOTTOM NAVIGATION
-      ========================= */}
+      ====================================================== */}
 
-      <div className="sticky bottom-0 bg-cream/95 backdrop-blur border-t border-emerald-deep/8 px-5 py-4 flex items-center justify-between">
+      <div
+        className="
+          sticky
+          bottom-0
+          z-20
+          flex
+          items-center
+          justify-between
+          border-t
+          border-emerald-deep/8
+          bg-cream/95
+          px-3
+          py-3.5
+          backdrop-blur
+          sm:px-5
+          sm:py-4
+        "
+      >
+
+        {/* PREVIOUS */}
 
         <button
+          type="button"
           onClick={() =>
             goTo(-1)
           }
           disabled={
             surahNumber <= 1
           }
-          className="flex items-center gap-1 text-sm font-semibold text-emerald-deep disabled:opacity-30"
+          className="
+            flex
+            items-center
+            gap-1
+            text-sm
+            font-semibold
+            text-emerald-deep
+            disabled:opacity-30
+          "
         >
+
           <ChevronLeft
             size={16}
           />
 
-          Previous
+          <span className="hidden sm:inline">
+            Previous
+          </span>
+
+          <span className="sm:hidden">
+            Prev
+          </span>
+
         </button>
 
 
-        <span className="text-xs text-ink-faint">
+        {/* POSITION */}
+
+        <span
+          className="
+            px-3
+            text-xs
+            text-ink-faint
+          "
+        >
           {surahNumber} /{" "}
           {TOTAL_SURAHS}
         </span>
 
 
+        {/* NEXT */}
+
         <button
+          type="button"
           onClick={() =>
             goTo(1)
           }
@@ -1239,21 +2094,33 @@ export default function SurahReading() {
             surahNumber >=
             TOTAL_SURAHS
           }
-          className="flex items-center gap-1 text-sm font-semibold text-emerald-deep disabled:opacity-30"
+          className="
+            flex
+            items-center
+            gap-1
+            text-sm
+            font-semibold
+            text-emerald-deep
+            disabled:opacity-30
+          "
         >
-          Next
+
+          <span>
+            Next
+          </span>
 
           <ChevronRight
             size={16}
           />
+
         </button>
 
       </div>
 
 
-      {/* =========================
-          CONTINUE FROM HERE SHEET
-      ========================= */}
+      {/* =====================================================
+          READING PROGRESS SHEET
+      ====================================================== */}
 
       <Sheet
         open={Boolean(
@@ -1271,7 +2138,19 @@ export default function SurahReading() {
         {selectedAyah && (
           <div className="text-center">
 
-            <div className="w-12 h-12 rounded-full bg-emerald-soft flex items-center justify-center mx-auto mb-4">
+            <div
+              className="
+                mx-auto
+                mb-4
+                flex
+                h-12
+                w-12
+                items-center
+                justify-center
+                rounded-full
+                bg-emerald-soft
+              "
+            >
 
               <Bookmark
                 size={21}
@@ -1281,13 +2160,23 @@ export default function SurahReading() {
             </div>
 
 
-            <h3 className="font-display text-xl font-semibold text-ink mb-1">
+            <h3
+              className="
+                mb-1
+                font-display
+                text-xl
+                font-semibold
+                text-ink
+              "
+            >
               Ayah{" "}
-              {selectedAyah.number}
+              {
+                selectedAyah.number
+              }
             </h3>
 
 
-            <p className="text-sm text-ink-soft mb-6">
+            <p className="mb-6 text-sm text-ink-soft">
               Continue your Quran
               reading from this Ayah?
             </p>
