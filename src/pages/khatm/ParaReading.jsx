@@ -89,7 +89,7 @@ function toArabicNumber(number) {
 
 
 /* =========================================================
-   PARA READING
+   JUZ READING
 ========================================================= */
 
 export default function ParaReading() {
@@ -262,7 +262,7 @@ export default function ParaReading() {
 
 
   /* =========================================================
-     LOAD PARA
+     LOAD JUZ
   ========================================================= */
 
   const load =
@@ -431,7 +431,7 @@ export default function ParaReading() {
 
 
   /* =========================================================
-     PARA DATA
+     JUZ DATA
   ========================================================= */
 
   const para =
@@ -537,9 +537,6 @@ export default function ParaReading() {
       /*
        * If this Surah is already playing,
        * clicking the header stops it.
-       *
-       * The existing toggleSurah behavior is
-       * reused so we don't change the audio hook.
        */
 
       if (
@@ -557,15 +554,11 @@ export default function ParaReading() {
 
       try {
         /*
-         * IMPORTANT:
+         * A Juz can contain only PART
+         * of a Surah.
          *
-         * A Para can contain only PART of a Surah.
-         *
-         * Example:
-         * Juz 2 can begin with Baqarah 142.
-         *
-         * Therefore header audio must use the
-         * COMPLETE Surah, not group.ayahs.
+         * Therefore header audio uses
+         * the COMPLETE Surah.
          */
 
         const fullSurah =
@@ -693,7 +686,14 @@ export default function ParaReading() {
 
 
   /* =========================================================
-     COMPLETE PARA
+     COMPLETE JUZ
+     
+     IMPORTANT:
+     After successful Juz completion,
+     go DIRECTLY to the Juz Dua page.
+     
+     The previous intermediate completion
+     screen is intentionally skipped.
   ========================================================= */
 
   const handleComplete =
@@ -715,14 +715,12 @@ export default function ParaReading() {
         );
 
 
-        setTimeout(() => {
-          navigate(
-            `/khatm/${id}/complete`,
-          );
-        }, 900);
+        navigate(
+          `/khatm/${id}/dua`,
+        );
       } catch (error) {
         console.error(
-          "Failed to complete Para:",
+          "Failed to complete Juz:",
           error.message,
         );
 
@@ -735,7 +733,7 @@ export default function ParaReading() {
 
 
   /* =========================================================
-     PARA NAVIGATION
+     JUZ NAVIGATION
   ========================================================= */
 
   const goToPara =
@@ -769,7 +767,7 @@ export default function ParaReading() {
     <div className="min-h-screen bg-cream">
 
       <TopBar
-        title="Para Reading"
+        title="Juz Reading"
       />
 
 
@@ -796,10 +794,10 @@ export default function ParaReading() {
             {isCompleted
               ? "✓ Reading completed"
               : isMyPara
-                ? "Your Para — Reading in progress"
+                ? "Your Juz — Reading in progress"
                 : isClaimedBySomeoneElse
-                  ? "This Para is being read by another member"
-                  : "This Para is available to claim"}
+                  ? "This Juz is being read by another member"
+                  : "This Juz is available to claim"}
           </p>
 
         </div>
@@ -815,7 +813,7 @@ export default function ParaReading() {
           />
         ) : !juz ? (
           <QuranLoading
-            label={`Loading Para ${paraNumber}...`}
+            label={`Loading Juz ${paraNumber}...`}
           />
         ) : (
           <>
@@ -863,8 +861,8 @@ export default function ParaReading() {
                         {/* =====================================
                             SURAH HEADER
 
-                            ONLY renders when this group
-                            actually starts at Ayah 1.
+                            Only shown when this group
+                            actually begins at Ayah 1.
                         ====================================== */}
 
                         {showSurahHeader && (
@@ -1108,7 +1106,7 @@ export default function ParaReading() {
 
 
             {/* =================================================
-                PARA NAVIGATION
+                JUZ NAVIGATION
             ================================================== */}
 
             <div className="flex items-center justify-between mt-5">
@@ -1126,7 +1124,7 @@ export default function ParaReading() {
                   size={16}
                 />
 
-                Para{" "}
+                Juz{" "}
                 {paraNumber - 1}
               </button>
 
@@ -1141,12 +1139,13 @@ export default function ParaReading() {
                 }
                 className="flex items-center gap-1 text-sm font-semibold text-emerald-deep disabled:opacity-30"
               >
-                Para{" "}
+                Juz{" "}
                 {paraNumber + 1}
 
                 <ChevronRight
                   size={16}
                 />
+
               </button>
 
             </div>
@@ -1172,7 +1171,7 @@ export default function ParaReading() {
                 size={18}
               />
 
-              Para {num} Completed
+              Juz {num} Completed
 
             </div>
           )}
@@ -1188,7 +1187,7 @@ export default function ParaReading() {
                   )
                 }
               >
-                Mark Para as Completed
+                Mark Juz as Completed
               </Button>
             )}
 
@@ -1201,7 +1200,7 @@ export default function ParaReading() {
                   size={16}
                 />
 
-                This Para is assigned to another member
+                This Juz is assigned to another member
 
               </div>
             )}
@@ -1211,7 +1210,7 @@ export default function ParaReading() {
             isAvailable && (
               <div className="text-center text-sm text-ink-soft py-3.5">
 
-                Claim this Para from the Para Division page to start reading.
+                Claim this Juz from the Juz Division page to start reading.
 
               </div>
             )}
@@ -1392,7 +1391,7 @@ export default function ParaReading() {
 
 
       {/* =======================================================
-          COMPLETE PARA SHEET
+          COMPLETE JUZ SHEET
       ======================================================== */}
 
       <Sheet
@@ -1407,7 +1406,7 @@ export default function ParaReading() {
         <div className="text-center">
 
           <h3 className="font-display text-xl font-semibold text-ink mb-2">
-            Have you completed Para{" "}
+            Have you completed Juz{" "}
             {num}?
           </h3>
 
