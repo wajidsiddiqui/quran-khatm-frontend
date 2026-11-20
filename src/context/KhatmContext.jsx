@@ -13,6 +13,7 @@ import {
 import {
   createKhatm as createKhatmApi,
   getMyKhatms,
+  getKhatmById,
   getKhatmByInviteCode,
   joinKhatmApi,
   claimParaApi,
@@ -67,6 +68,13 @@ export function KhatmProvider({
   const [
     khatmLoading,
     setKhatmLoading,
+  ] = useState(false);
+
+
+  // true once the first load of the user's Khatms has finished
+  const [
+    khatmsLoaded,
+    setKhatmsLoaded,
   ] = useState(false);
 
 
@@ -131,6 +139,10 @@ export function KhatmProvider({
           setKhatmLoading(
             false,
           );
+
+          setKhatmsLoaded(
+            true,
+          );
         }
       },
       [token],
@@ -158,6 +170,8 @@ export function KhatmProvider({
       setActivityLog([]);
 
       setReadingProgress({});
+
+      setKhatmsLoaded(false);
     }
   }, [
     isAuthenticated,
@@ -184,6 +198,61 @@ export function KhatmProvider({
         );
       },
       [khatms],
+    );
+
+
+  /*
+   * ========================================
+   * FETCH ONE KHATM FROM THE SERVER
+   * (used after a page refresh, and to pick up
+   * other members' latest claims)
+   * ========================================
+   */
+
+  const fetchKhatm =
+    useCallback(
+      async (id) => {
+        if (!token) {
+          return null;
+        }
+
+        try {
+          const result =
+            await getKhatmById(
+              id,
+              token,
+            );
+
+          const fresh = result.data;
+
+          setKhatms((prev) => {
+            const exists = prev.some(
+              (k) =>
+                String(k._id || k.id) ===
+                String(id),
+            );
+
+            return exists
+              ? prev.map((k) =>
+                  String(k._id || k.id) ===
+                  String(id)
+                    ? fresh
+                    : k,
+                )
+              : [fresh, ...prev];
+          });
+
+          return fresh;
+        } catch (error) {
+          console.error(
+            "Failed to fetch Khatm:",
+            error.message,
+          );
+
+          return null;
+        }
+      },
+      [token],
     );
 
 
@@ -800,6 +869,8 @@ export function KhatmProvider({
         activityLog,
 
         khatmLoading,
+        khatmsLoaded,
+        fetchKhatm,
 
         readingProgress,
 

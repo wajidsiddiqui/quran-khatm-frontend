@@ -115,6 +115,7 @@ import Saved from "./pages/saved/Saved";
 import Profile from "./pages/profile/Profile";
 
 import Settings from "./pages/profile/Settings";
+import KhatmGate from "./components/auth/KhatmGate";
 
 
 /* =========================================================
@@ -320,6 +321,9 @@ function AppRoutes() {
         />
 
 
+        {/* Every /khatm/:id page waits for its Khatm to load (fixes refresh) */}
+        <Route element={<KhatmGate />}>
+
         {/* KHATM DETAILS */}
 
         <Route
@@ -448,6 +452,7 @@ function AppRoutes() {
             <ParaReading />
           }
         />
+        </Route>
 
 
         {/* ===================================================

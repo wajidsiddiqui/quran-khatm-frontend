@@ -40,15 +40,15 @@ export default function JuzDetail() {
 
   return (
     <div className="min-h-screen bg-cream">
-      <TopBar title={`Para ${num}`} />
+      <TopBar title={`Juz ${num}`} />
       <div className="px-5 pb-8">
         {myPara && activeKhatm && (
           <Card className="mb-5 bg-emerald-soft !border-emerald/20">
             <p className="text-xs font-semibold text-emerald-deep uppercase tracking-wide mb-1">
-              Your Assigned Para
+              Your Assigned Juz
             </p>
             <h3 className="font-display text-lg font-semibold text-ink mb-1">
-              Para {num}
+              Juz {num}
             </h3>
             <p className="text-sm text-ink-soft mb-4">
               {myPara.status === "completed" ? "✓ Completed" : "In Progress"} ·{" "}
@@ -69,7 +69,7 @@ export default function JuzDetail() {
         {error ? (
           <QuranError onRetry={load} />
         ) : !juz ? (
-          <QuranLoading label={`Loading Para ${juzNumber}...`} />
+          <QuranLoading label={`Loading Juz ${juzNumber}...`} />
         ) : (
           <MushafFrame
             label={`Juz ${juzNumber} \u00b7 Surahs`}
@@ -91,7 +91,7 @@ export default function JuzDetail() {
                         {g.surahName}
                       </p>
                       <p className="text-xs text-ink-soft">
-                        {g.ayahs.length} verses in this Para
+                        {g.ayahs.length} verses in this Juz
                       </p>
                     </div>
                   </div>

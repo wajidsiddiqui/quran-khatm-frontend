@@ -109,7 +109,7 @@ export default function QuranHome() {
           </h1>
 
           <p className="text-xs text-ink-soft">
-            114 Surahs · 30 Paras
+            114 Surahs · 30 Juz
           </p>
 
         </div>

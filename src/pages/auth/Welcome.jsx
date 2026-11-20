@@ -11,7 +11,7 @@ export default function Welcome() {
           <BookOpenText size={28} className="text-gold" strokeWidth={1.6} />
         </div>
         <h1 className="font-display text-2xl font-semibold text-ink mb-2">Quran Khatm</h1>
-        <p className="text-ink-soft text-[15px]">Complete the Quran together, one Para at a time.</p>
+        <p className="text-ink-soft text-[15px]">Complete the Quran together, one Juz at a time.</p>
       </div>
       <div className="space-y-3">
         <Button className="w-full" onClick={() => navigate("/signup")}>

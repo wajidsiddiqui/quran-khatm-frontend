@@ -26,7 +26,7 @@ export default function KhatmCard({ khatm }) {
         <div className="flex items-center justify-between text-sm text-ink-soft">
           <span>{completed} / 30 Completed</span>
           <span className="flex items-center gap-1">
-            <Users size={14} /> {khatm.memberCount} Members
+            <Users size={14} /> {khatm.members?.length ?? khatm.memberCount ?? 0} Members
           </span>
         </div>
       </Card>

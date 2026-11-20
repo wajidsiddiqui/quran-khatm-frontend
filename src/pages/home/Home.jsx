@@ -940,7 +940,7 @@ export default function Home() {
             title:
               "Khatm Progress",
             description:
-              "See the full Para grid",
+              "See the full Juz grid",
             accent: "sky",
           },
         ]

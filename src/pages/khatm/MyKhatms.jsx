@@ -40,7 +40,7 @@ export default function MyKhatms() {
             description={
               tab === "active"
                 ? "Create a new Khatm or join one through an invite link."
-                : "Completed Khatms will appear here once all 30 Paras are done."
+                : "Completed Khatms will appear here once all 30 Juz are done."
             }
             action={
               tab === "active" && (

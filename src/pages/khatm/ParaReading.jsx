@@ -54,6 +54,7 @@ import SurahHeader from "../../components/quran/SurahHeader";
 import {
   isSurahStart,
 } from "../../utils/quranSurah";
+import BismillahLine from "../../components/quran/BismillahLine";
 
 
 const TOTAL_PARAS = 30;
@@ -978,6 +979,9 @@ export default function ParaReading() {
                           />
                         )}
 
+
+                        {/* Bismillah on its own line */}
+                        {group.hasBismillah && <BismillahLine />}
 
                         {/* =====================================
                             CONTINUOUS AYAH FLOW

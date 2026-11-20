@@ -51,7 +51,7 @@ export default function ParaProgressCard({ khatm, para }) {
       ) : (
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-ink-soft">
-            You haven't claimed a Para yet.
+            You haven't claimed a Juz yet.
           </p>
 
           <Link

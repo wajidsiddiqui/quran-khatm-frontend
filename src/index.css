@@ -66,13 +66,16 @@ html.dark .divide-emerald-deep\/8 > :not([hidden]) ~ :not([hidden]) {
   background-size: 22px 22px;
 }
 
+/* Dots layered ON TOP of the emerald gradient (this class is used together
+   with bg-emerald-gradient; on its own it used to wipe the gradient out). */
 .geo-pattern-dark {
   background-image: radial-gradient(
-    circle at 1px 1px,
-    rgba(232, 217, 174, 0.18) 1px,
-    transparent 0
-  );
-  background-size: 22px 22px;
+      circle at 1px 1px,
+      rgba(232, 217, 174, 0.18) 1px,
+      transparent 0
+    ),
+    linear-gradient(160deg, #0f3d2e 0%, #1e6e54 100%);
+  background-size: 22px 22px, auto;
 }
 
 ::-webkit-scrollbar {

@@ -44,6 +44,7 @@ import Sheet from "../../components/common/Sheet";
 import Button from "../../components/common/Button";
 
 import SurahHeader from "../../components/quran/SurahHeader";
+import BismillahLine from "../../components/quran/BismillahLine";
 
 
 const TOTAL_SURAHS = 114;
@@ -1496,6 +1497,9 @@ export default function SurahReading() {
 
             </div>
 
+
+            {/* Bismillah on its own line */}
+            {surah.hasBismillah && <BismillahLine />}
 
             {/* =================================================
                 CONTINUOUS AYAH FLOW

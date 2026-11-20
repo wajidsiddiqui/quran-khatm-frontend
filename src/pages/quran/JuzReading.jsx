@@ -48,6 +48,7 @@ import SurahHeader from "../../components/quran/SurahHeader";
 import {
   isSurahStart,
 } from "../../utils/quranSurah";
+import BismillahLine from "../../components/quran/BismillahLine";
 
 
 const TOTAL_JUZ = 30;
@@ -1518,6 +1519,9 @@ export default function JuzReading() {
                       </div>
                     )}
 
+
+                    {/* Bismillah on its own line */}
+                    {group.hasBismillah && <BismillahLine />}
 
                     {/* =================================================
                         ARABIC FLOW

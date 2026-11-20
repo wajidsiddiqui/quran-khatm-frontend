@@ -29,13 +29,13 @@ export default function MemberCard({ member }) {
             <div className="mt-1 space-y-0.5">
               {claimedParas.length > 0 && (
                 <p className="text-xs text-ink-soft">
-                  Claimed: Para {claimedParas.join(", ")}
+                  Claimed: Juz {claimedParas.join(", ")}
                 </p>
               )}
 
               {completedParas.length > 0 && (
                 <p className="text-xs text-ink-soft">
-                  Completed: Para {completedParas.join(", ")}
+                  Completed: Juz {completedParas.join(", ")}
                 </p>
               )}
             </div>

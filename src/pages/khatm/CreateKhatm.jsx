@@ -11,10 +11,28 @@ export default function CreateKhatm() {
   const { createKhatm } = useKhatms();
   const [form, setForm] = useState({ title: "", dedicatedTo: "", message: "", privacy: "invite" });
 
-  const handleSubmit = (e) => {
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const k = createKhatm({ title: form.title, dedicatedTo: form.dedicatedTo, message: form.message, intentionType: "For" });
-    navigate(`/khatm/${k.id}/invite`);
+    try {
+      setError("");
+      setSaving(true);
+      // wait for the server to save it, then open its invite page
+      const k = await createKhatm({
+        title: form.title,
+        dedicatedTo: form.dedicatedTo,
+        message: form.message,
+        privacy: form.privacy,
+        intentionType: "For",
+      });
+      navigate(`/khatm/${k._id || k.id}/invite`);
+    } catch (err) {
+      setError(err.message || "Could not create the Khatm. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -71,7 +89,10 @@ export default function CreateKhatm() {
           </button>
         </div>
 
-        <Button type="submit" className="w-full">Create Khatm</Button>
+        {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+        <Button type="submit" className="w-full" disabled={saving}>
+          {saving ? "Creating..." : "Create Khatm"}
+        </Button>
       </form>
     </div>
   );

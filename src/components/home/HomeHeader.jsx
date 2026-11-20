@@ -163,10 +163,10 @@ export default function HomeHeader({ name }) {
 
     Hume exact format chahiye:
 
-    Para 10 completed
+    Juz 10 completed
     Completed by Asres
 
-    Para 11 claimed
+    Juz 11 claimed
     Claimed by Asres
   */
   const getNotificationContent = (notification) => {
@@ -186,13 +186,13 @@ export default function HomeHeader({ name }) {
 
       case "claimed":
         return {
-          title: `Para ${paraNumber} claimed`,
+          title: `Juz ${paraNumber} claimed`,
           message: `Claimed by ${userName}`,
         };
 
       case "completed":
         return {
-          title: `Para ${paraNumber} completed`,
+          title: `Juz ${paraNumber} completed`,
           message: `Completed by ${userName}`,
         };
 

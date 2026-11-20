@@ -155,6 +155,32 @@ const REVELATION_ORDER = {
 
 
 /* =========================================================
+   BISMILLAH
+   In this dataset verse 1 of every Surah (except Al-Fatihah,
+   where the Bismillah IS verse 1, and At-Tawbah, which has
+   none) starts with the Bismillah's 4 words. We remove them
+   from the verse and show the Bismillah on its own line.
+========================================================= */
+export function hasSeparateBismillah(surahNumber) {
+  const n = Number(surahNumber);
+  return n !== 1 && n !== 9;
+}
+
+function stripBismillah(text, surahNumber, ayahNumber) {
+  const clean = String(text || "").replace(/^\uFEFF/, "");
+  if (!hasSeparateBismillah(surahNumber) || Number(ayahNumber) !== 1) {
+    return clean;
+  }
+  const words = clean.split(" ");
+  // compare base letters only (vowel marks can be in a different order)
+  const base = (w) => (w || "").replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "");
+  if (words.length > 4 && base(words[0]) === "بسم" && base(words[1]) === "ٱلله") {
+    return words.slice(4).join(" ");
+  }
+  return clean;
+}
+
+/* =========================================================
    GET JSON
 ========================================================= */
 
@@ -365,9 +391,13 @@ export async function fetchSurah(
         rukuNumber:
           ayah.ruku ?? null,
 
-        // Arabic text.
+        // Arabic text (Bismillah moved to its own line).
         arabic:
-          ayah.text,
+          stripBismillah(
+            ayah.text,
+            surahNumber,
+            ayah.numberInSurah,
+          ),
 
         // English translation.
         translation:
@@ -437,6 +467,12 @@ export async function fetchSurah(
       surahInfo?.revelationTypeArabic ??
       getArabicRevelationType(
         arabicEdition.revelationType,
+      ),
+
+    // Show the Bismillah line before verse 1.
+    hasBismillah:
+      hasSeparateBismillah(
+        arabicEdition.number,
       ),
 
     ayahs,
@@ -883,6 +919,29 @@ function getSurahNumbersForPara(
    BUILD GROUPS FROM CUSTOM PARA RANGE
 ========================================================= */
 
+/* =========================================================
+   LOAD IN SMALL BATCHES (+ ONE RETRY)
+========================================================= */
+
+async function mapInBatches(items, batchSize, fn) {
+  const results = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    results.push(...(await Promise.all(batch.map(fn))));
+  }
+  return results;
+}
+
+async function fetchSurahWithRetry(surahNumber) {
+  try {
+    return await fetchSurah(surahNumber);
+  } catch {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    return fetchSurah(surahNumber);
+  }
+}
+
+
 async function buildParaGroups(
   paraNumber,
   boundary,
@@ -895,14 +954,16 @@ async function buildParaGroups(
       boundary,
     );
 
+  // Load Surahs a few at a time (not all at once): Juz 30 has 37
+  // Surahs, and firing ~74 requests together gets blocked by the API.
   const fetchedSurahs =
-    await Promise.all(
-      surahNumbers.map(
-        (surahNumber) =>
-          fetchSurah(
-            surahNumber,
-          ),
-      ),
+    await mapInBatches(
+      surahNumbers,
+      4,
+      (surahNumber) =>
+        fetchSurahWithRetry(
+          surahNumber,
+        ),
     );
 
   const groups = [];
@@ -970,6 +1031,18 @@ async function buildParaGroups(
           surah.revelationTypeArabic ??
           "",
 
+        // Bismillah line only when this group starts at verse 1.
+
+        hasBismillah:
+
+          hasSeparateBismillah(
+
+            surah.number,
+
+          ) &&
+
+          filteredAyahs[0]?.number === 1,
+
         ayahs:
           filteredAyahs.map(
             (ayah) => ({
@@ -1012,7 +1085,7 @@ export async function fetchJuz(
     paraNumber > 30
   ) {
     throw new Error(
-      "Para number must be an integer between 1 and 30.",
+      "Juz number must be an integer between 1 and 30.",
     );
   }
 
@@ -1023,7 +1096,7 @@ export async function fetchJuz(
 
   if (!boundary) {
     throw new Error(
-      `No boundary configured for Para ${paraNumber}.`,
+      `No boundary configured for Juz ${paraNumber}.`,
     );
   }
 

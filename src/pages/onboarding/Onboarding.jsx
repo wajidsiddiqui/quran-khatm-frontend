@@ -12,12 +12,12 @@ const slides = [
   {
     icon: Users,
     title: "Complete the Quran Together",
-    text: "Invite family and friends and divide the 30 Paras among the group.",
+    text: "Invite family and friends and divide the 30 Juz among the group.",
   },
   {
     icon: BarChart3,
     title: "Track Every Step",
-    text: "See which Paras are available, claimed, and completed.",
+    text: "See which Juz are available, claimed, and completed.",
   },
 ];
 
